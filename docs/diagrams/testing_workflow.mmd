@@ -1,0 +1,32 @@
+%% Diagram 6 - Testing and experiment workflow (STUDENT PROTOTYPE).
+flowchart LR
+    classDef local fill:#eef7ee,stroke:#1f7a4d,color:#10301f
+    classDef cloud fill:#fff4dc,stroke:#c98a1b,color:#241a20
+    classDef out fill:#e8f1fb,stroke:#2b6cb0,color:#10243a
+    classDef pending fill:#f4f4f4,stroke:#888,color:#555,stroke-dasharray:4 3
+
+    subgraph LOCAL["Runs on a laptop - results labelled actual_local"]
+        T1["scripts/validate_project.py<br/>compile, JSON/YAML, links, secrets"]:::local
+        T2["pytest + coverage<br/>backend/tests (unit, API, handler, edge)"]:::local
+        T3["uvicorn API on :8000"]:::local
+        T4["Load test: k6 or run_local_benchmark.py<br/>1 / 10 / 25 / 50 VUs"]:::local
+    end
+    subgraph CLOUD["Requires AWS deployment - results labelled actual_aws"]
+        C1["sam deploy"]:::cloud
+        C2["k6 → deployed HTTP API<br/>run_aws_experiments.sh"]:::cloud
+        C3["CloudWatch Logs Insights<br/>Init Duration, Billed Duration, cold-start count"]:::cloud
+    end
+    R1["results/local_results.csv / .json"]:::out
+    R2["results/cloud_results.csv<br/>(template until measured)"]:::pending
+    A["analysis/analyze_results.py<br/>Markdown tables (one label at a time)"]:::out
+    G["analysis/generate_charts.py<br/>charts only from actual_* rows"]:::out
+    CM["analysis/cost_model.py<br/>cost per 1,000 requests (prices from AWS calculator)"]:::out
+    REP["test_reports/validation_summary.md<br/>docs/07 · reports/"]:::out
+
+    T1 --> T2 --> T3 --> T4 --> R1
+    T2 --> C1 --> C2 --> R2
+    C1 --> C3 --> CM
+    R1 --> A
+    R2 --> A
+    A --> G --> REP
+    CM --> REP

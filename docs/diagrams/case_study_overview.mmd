@@ -1,0 +1,30 @@
+%% Diagram 1 - REAL-WORLD Shaadi.com case-study concept (sourced facts only).
+%% Every node cites its source ID from research/sources.md. This is NOT a
+%% production architecture diagram: Shaadi.com's internal design is not public.
+flowchart LR
+    classDef real fill:#fdecef,stroke:#8a2c4f,color:#241a20
+    classDef claim fill:#fff4dc,stroke:#c98a1b,color:#241a20,stroke-dasharray:4 3
+    classDef note fill:#f4f4f4,stroke:#888,color:#333
+
+    subgraph RW["REAL-WORLD CASE STUDY - Shaadi.com (from public sources)"]
+        U["Members<br/>'35 million+ people' [S1, S2]"]:::real
+        APP["Web and mobile matchmaking platform"]:::real
+        subgraph AWS["Public AWS usage reported by sources"]
+            C["Compute: Amazon EC2 [S1, S5]"]:::real
+            ST["Storage: Amazon S3 [S1, S2]"]:::real
+            DB["Databases: MySQL on EC2 → Amazon DynamoDB<br/>(messaging, 2022) [S3]"]:::real
+            DW["Analytics: Amazon Redshift<br/>data warehouse [S1, S2]"]:::real
+            SL["Serverless photo-review workflow:<br/>Lambda, Step Functions, EventBridge,<br/>Rekognition, S3, Cognito [S4]"]:::real
+        end
+        ML["AI/ML analysis of event records"]:::claim
+        OUT["'67 billion event records' → '4 million matches'<br/>Secondary source only (2018) [S6]<br/>AWS 2016: 'over 4 million people' found matches [S1]"]:::claim
+    end
+
+    U --> APP --> C
+    APP --> ST
+    APP --> DB
+    APP --> SL
+    DB -. "conceptual link (our interpretation)" .-> DW
+    DW -. "reported only in [S6]" .-> ML --> OUT
+
+    N["Legend: solid = reported by a cited source;<br/>dashed = claim from course material / secondary source, not independently verified"]:::note

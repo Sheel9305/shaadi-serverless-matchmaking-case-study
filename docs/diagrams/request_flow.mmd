@@ -1,0 +1,38 @@
+%% Diagram 3 - API request/response flow (STUDENT PROTOTYPE).
+sequenceDiagram
+    autonumber
+    actor User as User (browser)
+    participant FE as Frontend (script.js)
+    participant GW as API Gateway HTTP API
+    participant LH as Lambda handler (Mangum)
+    participant API as FastAPI app
+    participant VAL as Pydantic validation
+    participant SVC as Recommendation service
+    participant REPO as JSON repository
+    participant CW as CloudWatch Logs
+
+    Note over User,CW: Student prototype. All profile data is synthetic.
+    User->>FE: Fill profile, click "Generate recommendations"
+    FE->>FE: Client-side checks (friendly messages only)
+    FE->>GW: POST /recommendations (JSON)
+    GW->>LH: Invoke (payload format 2.0)
+    Note right of LH: Cold start: module Init loads app + dataset once<br/>Warm: environment reused
+    LH->>API: ASGI request (aws.context → request_id)
+    API->>VAL: Validate body
+    alt Body missing / not JSON / not an object
+        VAL-->>API: body-level error
+        API-->>FE: 400 {status:"error", error:{code:"INVALID_JSON"...}}
+    else Field rule broken (age 12, min>max, duplicate interests...)
+        VAL-->>API: field errors
+        API-->>FE: 422 {status:"error", error:{code:"VALIDATION_ERROR", details:[...]}}
+    else Valid
+        API->>REPO: list_candidates() (cached after first call)
+        REPO-->>API: 64 synthetic profiles
+        API->>SVC: recommend(request, candidates)
+        SVC-->>API: ranked top N + reasons + score breakdown
+        API-->>LH: 200 JSON + X-Request-ID, X-Response-Time-Ms
+        LH-->>GW: HTTP response
+        GW-->>FE: 200 {status:"success", recommendations:[...]}
+    end
+    LH-)CW: {"event":"lambda_invocation","first_invocation_in_env":...}
+    FE->>User: Cards with score, reasons, round-trip and server time

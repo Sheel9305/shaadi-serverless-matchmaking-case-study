@@ -1,0 +1,24 @@
+%% Diagram 8 - Five-week project timeline (STUDENT TEAM PLAN).
+%% Week 1 research is complete. Replace the dates below with your semester dates.
+gantt
+    title IT457 Shaadi.com case study - 5-week plan (student prototype)
+    dateFormat YYYY-MM-DD
+    axisFormat W%U
+    section Week 1 - Research (done)
+    Case-study research and sources (all)            :done, w1a, 2026-10-12, 7d
+    section Week 2 - Foundations
+    M1 verify sources, case-study analysis           :m1a, 2026-10-19, 7d
+    M2 dataset, models, scoring                      :m2a, 2026-10-19, 7d
+    M3 frontend skeleton, k6 scenarios               :m3a, 2026-10-19, 7d
+    section Week 3 - Build
+    M1 architecture diagrams                         :m1b, after m1a, 7d
+    M2 API, Lambda handler, logging                  :m2b, after m2a, 7d
+    M3 API integration, result scripts               :m3b, after m3a, 7d
+    section Week 4 - Cloud and experiments
+    M2 SAM template, deploy, backend tests           :m2c, after m2b, 7d
+    M3 local + AWS load tests, cold starts, cost     :m3c, after m3b, 7d
+    M1 report draft from real results                :m1c, after m1b, 7d
+    section Week 5 - Integration and viva
+    Cross-reviews, final integration tests (all)     :w5a, after m2c, 4d
+    Report, slides, viva practice (all)              :w5b, after w5a, 3d
+    Submission                                       :milestone, after w5b, 0d

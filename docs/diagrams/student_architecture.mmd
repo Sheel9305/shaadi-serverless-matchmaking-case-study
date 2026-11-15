@@ -1,0 +1,29 @@
+%% Diagram 2 - PROPOSED STUDENT ARCHITECTURE (our IT457 prototype).
+flowchart LR
+    classDef student fill:#e8f1fb,stroke:#2b6cb0,color:#10243a
+    classDef aws fill:#fff4dc,stroke:#c98a1b,color:#241a20
+    classDef future fill:#f4f4f4,stroke:#888,color:#555,stroke-dasharray:4 3
+
+    subgraph SP["STUDENT PROTOTYPE - simplified academic implementation (not Shaadi.com's system)"]
+        B["Browser<br/>frontend/ (HTML, CSS, JS)"]:::student
+        subgraph AWS["AWS account (deployed with AWS SAM)"]
+            GW["Amazon API Gateway<br/>HTTP API<br/>GET /health · POST /recommendations"]:::aws
+            subgraph L["AWS Lambda · Python 3.12 · 512 MB"]
+                H["lambda_handler.py<br/>Mangum adapter + cold-start logging"]:::student
+                A["app.py (FastAPI)<br/>routing, errors, request IDs"]:::student
+                V["models.py + validation.py<br/>Pydantic rules → 400 / 422"]:::student
+                R["recommendation_service.py<br/>filter → score → sort → top N"]:::student
+                RP["repository.py"]:::student
+                D[("data/sample_profiles.json<br/>64 SYNTHETIC profiles")]:::student
+            end
+            CW["Amazon CloudWatch Logs<br/>structured JSON logs + REPORT lines"]:::aws
+            IAM["IAM execution role<br/>(basic logging only)"]:::aws
+        end
+        DDB[("Amazon DynamoDB<br/>future work, not deployed")]:::future
+    end
+
+    B -- "HTTPS JSON" --> GW --> H --> A --> V --> R --> RP --> D
+    H -. logs .-> CW
+    GW -. access logs .-> CW
+    IAM -. permissions .- L
+    RP -. "same interface" .-> DDB

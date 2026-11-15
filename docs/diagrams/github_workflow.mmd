@@ -1,0 +1,45 @@
+%% Diagram 7 - Three-member GitHub collaboration workflow (STUDENT TEAM PROCESS).
+gitGraph
+    commit id: "init: repo skeleton (shared)"
+    branch feature/case-study-architecture
+    branch feature/serverless-backend
+    branch feature/frontend-experiments
+    checkout feature/case-study-architecture
+    commit id: "M1 docs(research)"
+    commit id: "M1 docs(case-study)"
+    checkout feature/serverless-backend
+    commit id: "M2 feat(data)"
+    commit id: "M2 feat(recommender)"
+    checkout feature/frontend-experiments
+    commit id: "M3 feat(frontend)"
+    checkout main
+    merge feature/serverless-backend id: "PR #1 reviewed by M3" tag: "backend v0.1"
+    checkout feature/frontend-experiments
+    merge main id: "sync main"
+    commit id: "M3 test(load)"
+    checkout feature/serverless-backend
+    commit id: "M2 feat(api)"
+    commit id: "M2 feat(lambda)"
+    checkout feature/case-study-architecture
+    commit id: "M1 docs(architecture)"
+    checkout main
+    merge feature/case-study-architecture id: "PR #2 reviewed by M2"
+    merge feature/serverless-backend id: "PR #3 reviewed by M1"
+    checkout feature/frontend-experiments
+    merge main id: "sync main 2"
+    commit id: "M3 feat(experiments)"
+    commit id: "M3 feat(analysis)"
+    checkout feature/serverless-backend
+    commit id: "M2 infra(sam)+tests"
+    checkout feature/case-study-architecture
+    commit id: "M1 docs(report)"
+    commit id: "M1 docs(viva)"
+    checkout main
+    merge feature/serverless-backend id: "PR #4 reviewed by M3"
+    merge feature/frontend-experiments id: "PR #5 reviewed by M1"
+    merge feature/case-study-architecture id: "PR #6 reviewed by M2"
+    checkout feature/frontend-experiments
+    merge main id: "sync main 3"
+    commit id: "M3 docs(deployment)+validation"
+    checkout main
+    merge feature/frontend-experiments id: "PR #7 reviewed by M2" tag: "v1.0 submission"

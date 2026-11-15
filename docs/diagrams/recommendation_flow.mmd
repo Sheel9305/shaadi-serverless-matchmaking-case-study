@@ -1,0 +1,28 @@
+%% Diagram 4 - Recommendation algorithm flowchart (STUDENT PROTOTYPE, rules-based, not ML).
+flowchart TD
+    classDef step fill:#e8f1fb,stroke:#2b6cb0,color:#10243a
+    classDef decision fill:#fff4dc,stroke:#c98a1b,color:#241a20
+    classDef stop fill:#fdecef,stroke:#8a2c4f,color:#241a20
+
+    S([POST /recommendations]):::step --> V{"Valid request?<br/>age 18-100, min_age ≤ max_age,<br/>1-10 unique interests,<br/>known education"}:::decision
+    V -- no --> E[["400 / 422 error with field details"]]:::stop
+    V -- yes --> L["Load synthetic candidates (cached)"]:::step --> F
+    subgraph F["Hard filters for each candidate"]
+        F1{"candidate_id == user_id?"}:::decision -- yes --> X1["exclude"]:::stop
+        F1 -- no --> F2{"age within<br/>min_age..max_age?"}:::decision -- no --> X2["exclude"]:::stop
+        F2 -- yes --> F3{"city_required AND<br/>city ≠ preferred_city?"}:::decision -- yes --> X3["exclude"]:::stop
+        F3 -- no --> K["keep"]:::step
+    end
+    K --> SC
+    subgraph SC["Score = age + location + education + interests (max 100)"]
+        A["Age (30): 30 × max(0, 1 − gap/10)"]:::step
+        LO["Location (25): preferred city 25 · own city 10 · else 0"]:::step
+        ED["Education (15): same 15 · same field group 8 · else 0"]:::step
+        IN["Interests (30): 30 × common / min(|user|, |candidate|)"]:::step
+    end
+    SC --> RS["Build reasons<br/>e.g. 'Similar age (1 year apart)', 'Similar interests: music, travel'"]:::step
+    RS --> SO["Sort by score desc, then candidate_id asc"]:::step
+    SO --> T["Take top N (default 5, max 20)"]:::step
+    T --> Z{"Any candidates left?"}:::decision
+    Z -- yes --> OK[["200 success + recommendations"]]:::step
+    Z -- no --> NM[["200 success, empty list + 'No candidates matched…' message"]]:::stop

@@ -1,0 +1,35 @@
+%% Diagram 5 - AWS deployment architecture (STUDENT PROTOTYPE via AWS SAM).
+flowchart TB
+    classDef dev fill:#eef7ee,stroke:#1f7a4d,color:#10301f
+    classDef aws fill:#fff4dc,stroke:#c98a1b,color:#241a20
+    classDef res fill:#e8f1fb,stroke:#2b6cb0,color:#10243a
+
+    subgraph DEV["Developer laptop (student)"]
+        CODE["Git repo<br/>backend/src · infrastructure/template.yaml"]:::dev
+        SAM["AWS SAM CLI<br/>sam validate → sam build → sam deploy"]:::dev
+        CRED["AWS credentials via aws configure / SSO<br/>(never committed)"]:::dev
+    end
+
+    subgraph ACC["AWS account · region from samconfig.toml (default ap-south-1)"]
+        S3["S3 bucket for deployment artefacts<br/>(created by resolve_s3)"]:::aws
+        CFN["AWS CloudFormation stack<br/>shaadi-recommendation-dev"]:::aws
+        subgraph STACK["Resources created by template.yaml"]
+            API["AWS::Serverless::HttpApi<br/>CORS, throttling 50 rps / burst 100,<br/>access logs"]:::res
+            FN["AWS::Serverless::Function<br/>shaadi-recommendation-api-dev<br/>python3.12 · 512 MB · 10 s timeout"]:::res
+            ROLE["IAM role (generated)<br/>AWSLambdaBasicExecutionRole only"]:::res
+            LG1["Log group /aws/lambda/…<br/>7-day retention"]:::res
+            LG2["Log group /aws/apigateway/…<br/>7-day retention"]:::res
+        end
+    end
+    WEB["Frontend (local file server, or any static host)<br/>config.js → ApiBaseUrl output"]:::dev
+
+    CODE --> SAM
+    CRED -.-> SAM
+    SAM -- "upload package" --> S3
+    SAM -- "create / update changeset" --> CFN
+    CFN --> API & FN & ROLE & LG1 & LG2
+    API -- "invoke" --> FN
+    FN -- "logs" --> LG1
+    API -- "access logs" --> LG2
+    ROLE -.- FN
+    WEB -- "HTTPS" --> API
