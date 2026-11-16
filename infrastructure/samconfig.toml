@@ -1,0 +1,28 @@
+# AWS SAM CLI configuration. Run sam commands from the infrastructure/ folder.
+# No credentials are stored here. Configure them with `aws configure` or
+# `aws configure sso`. Change the region if your course requires another one.
+version = 0.1
+
+[default.global.parameters]
+stack_name = "shaadi-recommendation-dev"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.validate.parameters]
+lint = true
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+region = "ap-south-1"
+parameter_overrides = "StageName=\"dev\" MemorySize=\"512\" CorsAllowOrigin=\"*\" LogRetentionDays=\"7\""
+
+[default.local_start_api.parameters]
+warm_containers = "EAGER"
+port = 3000
+
+[default.sync.parameters]
+watch = true

@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  IT457 Cloud Computing student prototype - Shaadi.com-inspired matchmaking
+  recommendation API. API Gateway HTTP API -> AWS Lambda (Python, FastAPI + Mangum).
+  Uses SYNTHETIC data packaged with the function. Not Shaadi.com's production system.
+
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, test, prod]
+    Description: Deployment environment label (used in names and the APP_ENV variable).
+  MemorySize:
+    Type: Number
+    Default: 512
+    AllowedValues: [128, 256, 512, 1024, 2048]
+    Description: Lambda memory in MB. CPU scales with memory; used by the cost/latency experiments.
+  CorsAllowOrigin:
+    Type: String
+    Default: "*"
+    Description: Allowed browser origin for the frontend (restrict to your site URL for production).
+  LogRetentionDays:
+    Type: Number
+    Default: 7
+    AllowedValues: [1, 3, 5, 7, 14, 30]
+    Description: CloudWatch log retention. Short retention keeps storage cost low.
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Architectures: [x86_64]
+    Timeout: 10
+    MemorySize: !Ref MemorySize
+    Tracing: PassThrough
+
+Resources:
+  RecommendationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub shaadi-recommendation-api-${StageName}
+      Description: Health check and explainable rules-based recommendations (synthetic data).
+      CodeUri: ../backend/src/
+      Handler: lambda_handler.handler
+      LoggingConfig:
+        LogGroup: !Ref RecommendationFunctionLogGroup
+      Environment:
+        Variables:
+          APP_ENV: !Ref StageName
+          LOG_LEVEL: INFO
+          DATA_BACKEND: json
+          CORS_ALLOW_ORIGINS: !Ref CorsAllowOrigin
+          SERVICE_NAME: shaadi-recommendation-api
+      # Least privilege: the function reads data packaged in its own deployment
+      # artefact, so it needs NO extra AWS permissions. SAM's generated role only
+      # contains AWSLambdaBasicExecutionRole (write logs to CloudWatch).
+      Events:
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RecommendationHttpApi
+            Method: GET
+            Path: /health
+        Recommendations:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref RecommendationHttpApi
+            Method: POST
+            Path: /recommendations
+
+  RecommendationFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/shaadi-recommendation-api-${StageName}
+      RetentionInDays: !Ref LogRetentionDays
+
+  RecommendationHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      Description: !Sub IT457 matchmaking recommendation HTTP API (${StageName})
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref CorsAllowOrigin
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: [Content-Type, X-Request-ID]
+        ExposeHeaders: [X-Request-ID, X-Response-Time-Ms]
+        MaxAge: 600
+      # Conservative throttling protects the student AWS account from runaway load tests.
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 100
+        ThrottlingRateLimit: 50
+      AccessLogSettings:
+        DestinationArn: !GetAtt HttpApiAccessLogGroup.Arn
+        Format: '{"requestId":"$context.requestId","routeKey":"$context.routeKey","status":"$context.status","integrationLatency":"$context.integrationLatency","responseLatency":"$context.responseLatency","ip":"$context.identity.sourceIp","time":"$context.requestTime"}'
+
+  HttpApiAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/shaadi-recommendation-api-${StageName}
+      RetentionInDays: !Ref LogRetentionDays
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL of the HTTP API - paste this into frontend/config.js
+    Value: !Sub https://${RecommendationHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}
+  HealthUrl:
+    Description: Health-check endpoint
+    Value: !Sub https://${RecommendationHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/health
+  RecommendationsUrl:
+    Description: Recommendations endpoint (POST)
+    Value: !Sub https://${RecommendationHttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/recommendations
+  FunctionName:
+    Description: Lambda function name (use with `sam logs` / CloudWatch)
+    Value: !Ref RecommendationFunction
+  FunctionLogGroup:
+    Description: CloudWatch log group for Lambda logs
+    Value: !Ref RecommendationFunctionLogGroup

@@ -1,0 +1,20 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /recommendations",
+  "rawPath": "/recommendations",
+  "rawQueryString": "",
+  "headers": {"content-type": "application/json", "host": "example.execute-api.ap-south-1.amazonaws.com"},
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "exampleapi",
+    "domainName": "example.execute-api.ap-south-1.amazonaws.com",
+    "http": {"method": "POST", "path": "/recommendations", "protocol": "HTTP/1.1", "sourceIp": "203.0.113.10", "userAgent": "sample-event"},
+    "requestId": "sample-recommendation-request",
+    "routeKey": "POST /recommendations",
+    "stage": "$default",
+    "time": "13/Nov/2026:10:00:00 +0000",
+    "timeEpoch": 1794564000000
+  },
+  "body": "{\"user_id\": \"U001\", \"age\": 25, \"city\": \"Ahmedabad\", \"education\": \"Engineering\", \"interests\": [\"music\", \"travel\", \"technology\"], \"preferences\": {\"min_age\": 23, \"max_age\": 29, \"preferred_city\": \"Ahmedabad\"}, \"top_n\": 3}",
+  "isBase64Encoded": false
+}
