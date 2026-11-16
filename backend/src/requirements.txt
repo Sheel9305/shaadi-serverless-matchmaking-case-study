@@ -1,0 +1,4 @@
+# Runtime dependencies packaged into the Lambda function by `sam build`.
+fastapi>=0.110,<1.0
+mangum>=0.17,<1.0
+pydantic>=2.6,<3.0

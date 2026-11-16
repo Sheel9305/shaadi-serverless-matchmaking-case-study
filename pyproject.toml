@@ -1,0 +1,21 @@
+# Tool configuration only (this project is not packaged/published).
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["backend/src"]
+extend-exclude = [".venv", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "models", "validation", "recommendation_service", "repository", "lambda_handler", "logging_utils"]
+
+[tool.coverage.run]
+source = ["backend/src"]
+omit = ["backend/tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

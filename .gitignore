@@ -1,0 +1,34 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+test_reports/junit.xml
+test_reports/coverage.xml
+
+# AWS SAM / credentials - NEVER commit credentials
+.aws-sam/
+samconfig.local.toml
+.env
+.env.*
+*.pem
+credentials
+.aws/
+
+# Experiment scratch (keep raw/.gitkeep and committed results)
+experiments/results/raw/.imported
+
+# Build / packaging
+dist/
+node_modules/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
