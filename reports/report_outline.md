@@ -17,8 +17,8 @@
 | 9 | **Student implementation** | 0.75 | Sheel | Components, API contract, synthetic data, event flow | Fig: [request_flow](../docs/diagrams/rendered/request_flow.png) |
 | 10 | **Implementation details** | 1 | Sheel / Nakul | Scoring formula and weights, validation (400 vs. 422), handler and logging, SAM template, frontend | Fig: [recommendation_flow](../docs/diagrams/rendered/recommendation_flow.png); table of weights |
 | 11 | **Testing methodology** | 0.75 | Nakul | Test categories (110 tests, 99% coverage), static checks, load-test design, result labels | Fig: [testing_workflow](../docs/diagrams/rendered/testing_workflow.png) |
-| 12 | **Experimental results** | 1.5 | Nakul | 12a: **actual local** table and chart (available). 12b: **⏳ AWS** latency at 1/10/25/50 VUs. 12c: **⏳ cold starts** (count, Init Duration). 12d: local vs. AWS discussion | [local chart](../experiments/charts/local_latency_vs_vus.png); ⏳ aws charts |
-| 13 | **Cost analysis** | 0.75 | Nakul | Formula, inputs (**⏳ billed duration**, **⏳ dated prices**), cost per 1,000, discussion | Table from [docs/08](../docs/08_cost_analysis.md) |
+| 12 | **Experimental results** | 1.5 | Nakul | 12a: **actual local** table and chart (available). 12b: **actual AWS** latency at 1/10/25/50 VUs. 12c: **actual AWS cold starts** (Init Duration about 1.1 s). 12d: local vs. AWS discussion | [local chart](../experiments/charts/local_latency_vs_vus.png); ⏳ aws charts |
+| 13 | **Cost analysis** | 0.75 | Nakul | Formula, inputs (billed duration 12.593 ms, prices dated 2026-11-16), cost per 1,000 = $0.002510, discussion | Table from [docs/08](../docs/08_cost_analysis.md) |
 | 14 | **Limitations** | 0.25 | all | No auth, synthetic data, not ML, short tests, single region, unverified claims | — |
 | 15 | **Future improvements** | 0.25 | all | DynamoDB, EventBridge, Cognito, arm64, provisioned concurrency, CI/CD, ML experiment | — |
 | 16 | **Conclusion** | 0.25 | Bhaumik | Answer the objectives with evidence | — |
@@ -28,10 +28,10 @@
 
 ## Placeholders to replace before submission
 
-- [ ] ⏳ AWS latency table (`experiments/results/cloud_summary.md`)
-- [ ] ⏳ AWS charts (`experiments/charts/aws_*.png`)
-- [ ] ⏳ Cold-start results (`experiments/results/cold_start_results.csv`)
-- [ ] ⏳ Cost per 1,000 requests with price-check date
+- [x] AWS latency table (`experiments/results/cloud_summary.md`)
+- [x] AWS charts (`experiments/charts/aws_*.png`)
+- [x] Cold-start results (`experiments/results/cold_start_results.csv`)
+- [x] Cost per 1,000 requests with price-check date
 - [ ] ⏳ Screenshots: frontend against the AWS URL, Lambda console, CloudWatch REPORT line
 - [x] Week 1 research content (`research/week1_summary.md`)
 - [x] Member names and IDs (Group 49)

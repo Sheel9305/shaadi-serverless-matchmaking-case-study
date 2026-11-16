@@ -39,9 +39,11 @@ With N = 1,000 and 512 MB, the only measured input is **average billed duration*
 | Region | ap-south-1 (Mumbai) | samconfig.toml (deployed stack) |
 | Memory | 512 MB | template parameter |
 | Architecture | x86_64 | template |
-| Avg billed duration (warm) | **⏳ pending CloudWatch** | Logs Insights query Q3 |
-| Avg billed duration (incl. cold) | **⏳ pending CloudWatch** | Q3 |
-| Cold-start share in test | **⏳ pending CloudWatch** | Q1/Q2 |
+| Avg billed duration (all invocations, incl. cold) | **12.593 ms** (p50 5 ms, p95 14 ms, n = 2,398) | *Actual AWS*, CloudWatch REPORT lines, 2026-11-16 (`results/raw/cloudwatch_billed_duration_20261116.csv`) |
+| Avg billed duration (warm only) | 6.74 ms (n = 1,420) | *Actual AWS*, raw REPORT sample 16:21:55–16:42 UTC |
+| Billed duration of one cold start | 1,351–1,379 ms (includes about 1.1 s `Init Duration`) | *Actual AWS*, 2 cold starts observed |
+| Log bytes per request | **1,500.6 B** (about 6 lines) | *Actual AWS*: 3,598,513 B / 2,398 invocations (`results/raw/cloudwatch_log_bytes_20261116.csv`) |
+| Response size | 2.1 KB | *Actual AWS*: 1,919 B body + 234 B headers |
 | Lambda price per 1M requests | **$0.20** | Price List API `AWSLambda`, usage type `APS3-Request` (published 2026-11-11), checked 2026-11-16 |
 | Lambda price per GB-s (x86, Tier 1) | **$0.0000166667** | `APS3-Lambda-GB-Second` (same file) |
 | HTTP API price per 1M requests (first 300M) | **$1.05** | `AmazonApiGateway`, `APS3-ApiGatewayHttpRequest` (published 2026-11-12) |
@@ -55,45 +57,49 @@ Price List API URL pattern: `https://pricing.us-east-1.amazonaws.com/offers/v1.0
 ## 8.4 Running the model
 
 ```bash
-python experiments/analysis/cost_model.py                          # prices filled; billed duration pending
-python experiments/analysis/cost_model.py --duration-ms <measured> # after the CloudWatch query
+python experiments/analysis/cost_model.py                    # uses the measured 12.593 ms from cost_inputs.json
+python experiments/analysis/cost_model.py --duration-ms 6.74 # warm-only variant
 ```
 
-**Current output** (actual prices, billed duration still pending):
+**Result** (*actual AWS measurement* for duration, logs and response size; prices dated 2026-11-16):
 
 ```
 Cost model for 1,000 requests  (region: ap-south-1, memory: 512 MB, arch: x86_64)
 Prices checked on: 2026-11-16
-  Average billed duration : PENDING AWS MEASUREMENT ms
-  Lambda GB-seconds       : needs avg billed duration
+  Average billed duration : 12.593 ms
+  Lambda GB-seconds       : 6.2965
   Lambda requests         : 1,000
   API Gateway requests    : 1,000
-  Log data ingested       : 0.8583 MB
+  Log data ingested       : 1.4311 MB
   Data transferred out    : 2.0508 MB
 Cost lines (USD):
-  Lambda compute             : NEEDS BILLED DURATION
+  Lambda compute             : $0.000105
   Lambda requests            : $0.000200
   API Gateway (HTTP API)     : $0.001050
-  CloudWatch Logs ingestion  : $0.000562
+  CloudWatch Logs ingestion  : $0.000936
   Data transfer out          : $0.000219
-  TOTAL (before free tier)   : incomplete - see lines above
+  TOTAL (before free tier)   : $0.002510
 ```
 
-**What we can already say from the known lines:** before the compute line is added, 1,000 requests cost **$0.002031** (about 0.2 US cents). **API Gateway is about half of that** ($0.00105). Compute depends on billed duration. The handler's own work takes about 2.5 ms, so billed duration is likely to be a few milliseconds, which would keep compute far below the API Gateway charge. **This is an expectation until CloudWatch confirms it.**
+### Cost per 1,000 requests: **$0.002510** (about 0.25 US cents, before Free Tier)
 
-### Sensitivity of the total to billed duration (*illustrative*: the durations are assumed, the prices are real)
+| Item | USD per 1,000 | Share |
+|---|---:|---:|
+| API Gateway (HTTP API) | 0.001050 | 41.8% |
+| CloudWatch Logs ingestion | 0.000936 | 37.3% |
+| Data transfer out | 0.000219 | 8.7% |
+| Lambda requests | 0.000200 | 8.0% |
+| Lambda compute | 0.000105 | 4.2% |
+| **Total** | **0.002510** | 100% |
 
-| Assumed billed duration | GB-s per 1,000 | Lambda compute | Total per 1,000 (before free tier) |
-|---:|---:|---:|---:|
-| 3 ms | 1.5 | $0.000025 | $0.002055 |
-| 10 ms | 5 | $0.000083 | $0.002114 |
-| 50 ms | 25 | $0.000417 | $0.002447 |
+That works out to about **$2.51 per million requests**.
 
-Data transfer uses the **measured** response size (2.1 KB). The log line uses an **assumed** 900 B per request; replace it with the CloudWatch `IncomingBytes` figure. Replace this table with the single measured value once Q3 has been run.
-
-### Worked example of the arithmetic (*illustrative*; numbers invented for teaching, **not** a result)
-
-If the billed duration were 10 ms at 512 MB: `GB-s = 1000 × 0.010 × 0.5 = 5 GB-s` per 1,000 requests. Multiply by the current per-GB-s price, then add the per-request charges.
+**Findings**
+1. **Compute is the smallest line (4%).** The handler runs in about 5 ms, so a request costs almost nothing in GB-seconds, even at 512 MB.
+2. **Logging costs about 9× as much as compute.** We write about 1.5 KB of logs per request: our 3 JSON lines plus START/END/REPORT. Halving the logs (for example, dropping the duplicate `http_request` line, or sampling at INFO level) would save more than removing compute entirely. Our first guess, 900 B, was 40% too low, which is why the measured value replaces it.
+3. **Per-request charges dominate** (API Gateway + Lambda requests = 50%). They are fixed per call, so the main way to cut them is fewer calls (caching, batching).
+4. **Cold starts double the compute line, but not the total.** Warm-only billing (6.74 ms) would give compute $0.000056 and a total of $0.002461. Cold starts therefore add about 2% to the total.
+5. **Not included:** Free Tier (it would make this test free), CloudWatch storage beyond 7 days, and the API Gateway access-log group (about 190 B per request; it is a separate log group with the same ingestion price, about $0.00012 per 1,000).
 
 ## 8.5 Discussion points for the report
 

@@ -21,8 +21,11 @@ Every row carries exactly one `measurement_label`:
 | `cold_start_template.csv` | Columns for cold vs. warm observations | ⏳ template |
 | `cloud_results.csv` | AWS k6 runs | ✅ `actual_aws` run `k6-20261116T162319Z` |
 | `cloud_summary.md` | Markdown table of the AWS run | ✅ |
-| `cold_start_results.csv` | Client-side cold vs warm latency on AWS (Lambda fields pending CloudWatch) | ✅ partial |
+| `cold_start_results.csv` | Cold vs warm on AWS: client latency + Lambda REPORT fields (matched on request_id) | ✅ |
+| `raw/cloudwatch_*_20261116.csv` | CloudWatch Logs Insights exports: billed-duration stats, log bytes, REPORT lines of the cold probe | ✅ |
 | `raw/cold_probe_aws_20261116.json` | Raw cold-start probe (11 requests) | ✅ |
 | `raw/k6_aws_*.json` | k6 summaries of the AWS run | ✅ |
+
+The full raw CloudWatch export (18k lines) is **not** committed because it contains client IP addresses. Only aggregates and the REPORT lines are kept.
 
 Do not edit measured rows by hand. Re-run the experiment instead. Keep failed or odd runs and add a note rather than deleting them.

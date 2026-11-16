@@ -1,9 +1,8 @@
 """Transparent cost model: estimated cost of N (default 1,000) API requests.
 
-No AWS prices are hard-coded. Fill them into experiments/configs/cost_inputs.json
-from the AWS Pricing Calculator for your region and date. Until then the script
-prints the usage quantities and the formula, with "PRICE REQUIRED" in place of
-dollar amounts.
+No AWS prices are hard-coded. They live in experiments/configs/cost_inputs.json
+together with the date they were checked and their source. A null price prints
+"PRICE REQUIRED"; a null billed duration prints "NEEDS BILLED DURATION".
 
 Formulae (per run of N requests):
 

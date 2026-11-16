@@ -122,8 +122,13 @@ Same scenarios and API code, but with **k6 v2.4.0** as the client (the tool we w
 **Interpretation**
 1. **The network dominates single-request latency.** The application itself needs about 2.5 ms per request on AWS (`X-Response-Time-Ms`). The rest of the roughly 50–75 ms is the internet round trip, TLS, API Gateway and Lambda invocation overhead.
 2. **AWS latency does not grow with concurrency, unlike local.** Local p95 rises about 9× from 1 to 50 VUs, because one uvicorn process queues the requests. On AWS, p95 stays at about 72–92 ms, because Lambda serves concurrent requests in separate execution environments. This is the elasticity property of serverless, observed directly.
-3. **Scale-out cold starts show up in the maximum, not the percentiles.** The 1,466 ms maximum at 10 VUs fits a new execution environment being initialised during scale-up. p95 is unaffected because such requests are rare. (Confirm with the `Init Duration` count from CloudWatch.)
-4. **Errors at 50 VUs are HTTP 503s, not API Gateway throttling (429).** A follow-up burst test (3 rounds of 50 simultaneous requests) returned 503 `{"message":"Service Unavailable"}` for 16 → 2 → 0 requests as the environments warmed up. A 503 from an HTTP API Lambda integration usually means Lambda throttled the invocation. **Hypothesis (to verify):** the account's concurrent-execution quota is low (new accounts often start at 10 instead of 1,000). Verify with `aws lambda get-account-settings` (`ConcurrentExecutions`) and the Lambda **Throttles** metric for 16:22–16:24 UTC. Failed requests return quickly, which slightly lowers the 50-VU latency figures.
+3. **Scale-out cold starts show up in the maximum, not the percentiles.** The 1,466 ms maximum at 10 VUs fits a new execution environment being initialised during scale-up (CloudWatch `Init Duration` is about 1.1 s per cold start, see below). p95 is unaffected because such requests are rare.
+4. **Errors at 50 VUs are HTTP 503s, not API Gateway throttling (429).** A follow-up burst test (3 rounds of 50 simultaneous requests) returned 503 `{"message":"Service Unavailable"}` for 16 → 2 → 0 requests as the environments warmed up. A 503 from an HTTP API Lambda integration usually means Lambda throttled the invocation. **What the API Gateway access logs and REPORT lines show** (CloudWatch export, 16:21:55–16:42 UTC):
+   - the 503s are bunched in the **first ~10 s** of the 50-VU stage (5, 10, 4, 4, 1, 3, 4 … per second), then almost stop (2 in the last 20 s), and again in the first burst (16 at 16:22:56, 2 at 16:22:57);
+   - each 503 came back with an integration latency of only **3–9 ms**, and there is **no matching Lambda REPORT line** for them (1,421 REPORT lines vs 1,419 HTTP 200s in the same window), so Lambda rejected them **before** running our code;
+   - only about **8 execution environments** were active at the peak (from the `invocation_number_in_env` counters in our JSON logs).
+
+   So the errors happen while Lambda is scaling out, and stop once enough environments exist. Being rejected at about 8 environments fits the **hypothesis** that the account's concurrent-execution quota is low (new accounts often start at 10 instead of 1,000). This is **still not verified**: the Lambda `Throttles` metric and `aws lambda get-account-settings` were not collected. Failed requests return quickly, which slightly lowers the 50-VU latency figures.
 5. Fewer requests than the ideal VUs × 30 were completed at 25 VUs (563 vs about 710). The cause is not yet explained; check the CloudWatch metrics for that window.
 
 ### Cold start: client-side view (`cold_start_results.csv`)
@@ -133,9 +138,21 @@ Same scenarios and API code, but with **k6 v2.4.0** as the client (the tool we w
 | 1st request after an idle period | **1,722.96 ms** | 3.79 ms |
 | Next 10 requests, 1 s apart | 43.7–64.6 ms (mean 51.5 ms) | 2.3–4.0 ms |
 
-The first request was about **33× slower** than the warm ones, while the application code itself took under 4 ms in both cases. So the extra time is spent before our handler runs: creating the execution environment, starting Python, importing FastAPI/Pydantic and loading the dataset. Part of the first request's time is also a new HTTPS connection (DNS + TLS). **CloudWatch's `Init Duration` (pending) separates the Lambda part.** A one-off 6.3 s browser health check during the frontend test is *not* reported as a measurement; check it against CloudWatch.
+The first request was about **33× slower** than the warm ones, while the application code itself took under 4 ms in both cases. So the extra time is spent before our handler runs: creating the execution environment, starting Python, importing FastAPI/Pydantic and loading the dataset. Part of the first request's time is also a new HTTPS connection (DNS + TLS). **CloudWatch separates the Lambda part** (table below). A one-off 6.3 s browser health check during the frontend test is *not* reported as a measurement; check it against CloudWatch.
 
-**Pending (needs CloudWatch access):** `Init Duration` per cold start, number of cold starts during the k6 run, average **billed duration** (needed for the cost model), and the Throttles metric.
+### Cold start: Lambda view (CloudWatch REPORT lines, *actual AWS measurement*)
+
+| Invocation | Init Duration | Duration | Billed Duration | Max memory |
+|---|---:|---:|---:|---:|
+| Cold probe, 1st request (16:18:38 UTC) | **1,115.71 ms** | 262.48 ms | 1,379 ms | 85 MB |
+| Cold probe, next 10 requests | — | 4.65–16.38 ms | 5–17 ms | 85 MB |
+| Later cold start after idle (16:42:17 UTC) | **1,101.47 ms** | 249.04 ms | 1,351 ms | 85 MB |
+
+Of the 1,723 ms the client saw for the first request, about **1,378 ms** was Lambda (1,116 ms init + 262 ms first invocation). The rest, about 345 ms, is the new HTTPS connection plus API Gateway. Our own `lambda_init` log puts module import and dataset load at 1,022 ms, so most of `Init Duration` is our Python imports, not the platform. The first invocation (262 ms) is also slower than warm ones (about 5 ms), because Python's first-call costs (lazy imports, Pydantic schema building) come on top. **Billed duration includes init** for this ZIP-packaged Python function, which is why the cold request is billed 1,379 ms. Memory use is 85 MB of 512 MB.
+
+**Billed duration over all 2,398 invocations** (Logs Insights, `experiments/results/raw/cloudwatch_billed_duration_20261116.csv`): average **12.593 ms**, p50 5 ms, p95 14 ms (average duration 7.36 ms). The average is pulled up by the few cold starts. In the raw sample (1,421 invocations), the warm average is 6.74 ms. These figures feed the cost model in doc 08.
+
+**Still not collected:** the total number of cold starts during the k6 run (the raw export hit the 10,000-row limit and starts at 16:21:55), the Lambda `Throttles` metric, and the account concurrency quota.
 
 ## 7.6 Cold starts explained
 

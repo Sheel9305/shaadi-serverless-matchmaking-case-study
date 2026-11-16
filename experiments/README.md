@@ -35,5 +35,5 @@ python experiments/analysis/cost_model.py --duration-ms <measured_billed_ms>
 | Local latency and concurrency (1/10/25/50 VUs), Python client | ✅ Actual local measurement, 2026-11-13 ([results/local_summary.md](results/local_summary.md)) |
 | Local latency and concurrency (1/10/25/50 VUs), k6 v2.4.0 | ✅ Actual local measurement, 2026-11-16 ([results/local_k6_summary.md](results/local_k6_summary.md)) |
 | AWS latency and concurrency (k6) | ✅ Actual AWS measurement, 2026-11-16 ([results/cloud_summary.md](results/cloud_summary.md)); 5.5% HTTP 503 at 50 VUs, see doc 07 §7.5b |
-| AWS cold starts | ✅ Client side: 1,723 ms first vs about 52 ms warm (`results/cold_start_results.csv`) · ⏳ `Init Duration` pending CloudWatch |
-| Cost per 1,000 requests | ✅ Prices filled (Price List API, 2026-11-16) · ⏳ billed duration pending CloudWatch |
+| AWS cold starts | ✅ Client side 1,723 ms first vs about 52 ms warm; Lambda `Init Duration` about 1.1 s (`results/cold_start_results.csv`) |
+| Cost per 1,000 requests | ✅ $0.002510 before Free Tier (billed 12.593 ms avg, 1,500 B logs per request; prices 2026-11-16), see doc 08 |

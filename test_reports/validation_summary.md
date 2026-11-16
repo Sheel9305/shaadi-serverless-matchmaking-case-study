@@ -108,9 +108,13 @@ Deployed API: `https://tkylvibnsi.execute-api.ap-south-1.amazonaws.com` (stack `
 | CORS preflight | `curl -X OPTIONS … -H Origin: http://localhost:5500` | ✅ 204, allow-origin `*` |
 | Frontend against AWS | headless Chrome (Puppeteer) | ✅ all flows; screenshots `reports/figures/frontend_*_aws.png` |
 | Load test 1/10/25/50 VUs × 30 s | `API_URL=… bash experiments/run_aws_experiments.sh` | ✅ run `k6-20261116T162319Z`; p95 72–92 ms; **5.5% errors at 50 VUs** |
-| Error diagnosis | 3 bursts of 50 simultaneous requests | 503 "Service Unavailable" ×16 → ×2 → ×0 (likely Lambda throttling; verify quota) |
+| Error diagnosis | 3 bursts of 50 simultaneous requests + CloudWatch access logs | 503 "Service Unavailable" ×16 → ×2 → ×0. 503s fall in the first ~10 s of scale-up, return in 3–9 ms, and have no Lambda REPORT line (rejected before invocation; about 8 environments at peak). Likely Lambda throttling; the quota is still unverified |
 | Response size | `curl -w %{size_download}` | 1,919 B body + 234 B headers (top 5) |
 | Prices | AWS Price List API (ap-south-1 offer files) | ✅ filled in `cost_inputs.json`, checked 2026-11-16 |
+| Cold start, Lambda side | CloudWatch REPORT lines (M2 export) → `cold_start_results.csv` | ✅ Init Duration 1,115.71 ms and 1,101.47 ms (2 cold starts); warm duration about 5 ms; 85 MB used of 512 MB |
+| Billed duration | Logs Insights over 2,398 REPORT lines | ✅ avg 12.593 ms (p50 5, p95 14); warm-only 6.74 ms |
+| Log volume | Logs Insights sum of message bytes | ✅ 1,500.6 B per request |
+| Cost per 1,000 requests | `python experiments/analysis/cost_model.py` | ✅ **$0.002510** before Free Tier (API GW 42%, logs 37%, compute 4%) |
 
 ## 5. Not tested here (with reason) — the team must run these
 
@@ -120,9 +124,9 @@ Deployed API: `https://tkylvibnsi.execute-api.ap-south-1.amazonaws.com` (stack `
 | `sam local invoke` / `start-api` | Needs Docker | M2 |
 | **AWS deployment** | Deployed by M2 (Sheel) to ap-south-1; verified by M3 on 2026-11-16 (see §4c) | ✅ done |
 | **AWS latency, concurrency** | ✅ done 2026-11-16 (§4c) | — |
-| **Lambda cold starts** (Init Duration, count) | Client side done; Lambda `Init Duration` needs CloudWatch access | M2/M3: queries Q1–Q2 |
-| **Billed duration → cost per 1,000 requests** | Prices filled (2026-11-16); billed duration needs CloudWatch | M2/M3: query Q3 |
-| Lambda Throttles metric / account concurrency quota | Explains the 503s at 50 VUs (§4c) | M2: `aws lambda get-account-settings` |
+| **Lambda cold starts** (Init Duration, count) | ✅ Init Duration measured (§4c). The total cold-start count during the k6 run is not known (the raw export hit the 10,000-row limit) | Optional: `stats count(@initDuration)` for 16:20–16:23 UTC |
+| **Billed duration → cost per 1,000 requests** | ✅ done 2026-11-16 (§4c, doc 08) | — |
+| Lambda Throttles metric / account concurrency quota | Would confirm the cause of the 503s at 50 VUs (§4c); not collected | M2: `aws lambda get-account-settings` + Throttles metric 16:21–16:23 UTC |
 | CORS from the frontend to API Gateway | ✅ preflight 204 + browser test against AWS (§4c) | — |
 | W3C HTML validator / html-validate | Not installed; Python structural check used instead | Optional: `npx html-validate frontend/index.html` |
 | Windows `run_tests.ps1` | macOS machine | Any member on Windows |
