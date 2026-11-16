@@ -61,6 +61,8 @@ Note: the first `sam validate` call sent SAM CLI's default anonymous usage telem
 | 7 | Dark mode: low-contrast white text on the pink button | `--on-accent` colour token | Browser e2e re-run ✅ |
 | 8 | Browser requested a missing `/favicon.ico` (404 in console) | Inline empty favicon | Browser e2e re-run ✅ |
 | 9 | Logs Insights query Q4 used an invalid `sum()` on a string | Rewritten as `stats count(*) by first_inv` | Not executed (AWS only) |
+| 10 | (2026-11-16) k6 v2.4.0: `handleSummary` crashed (`Cannot read property 'vus' of undefined`), so no summary JSON was saved | Read VUs/duration from `SCENARIOS`/`__ENV` instead of `options` | k6 smoke run saves JSON ✅ |
+| 11 | (2026-11-16) `collect_results.py` gave every k6 file its own `run_id`, so "latest run" charts showed only the 50-VU scenario | One shared `run_id` per import batch | 4-scenario k6 import + charts ✅ |
 
 ## 4. Local experiment (Actual local measurement)
 
@@ -73,6 +75,26 @@ Run `20261113T161410Z-494296`. Python httpx closed-loop client (k6 not installed
 | 25 | 750 | 0% | 24.35 | 15.63 | 16.94 | 22.91 | 25.37 | 42.82 |
 | 50 | 1500 | 0% | 48.43 | 20.89 | 20.33 | 35.19 | 37.16 | 45.72 |
 
+## 4b. Local experiment with k6 (Actual local measurement, 2026-11-16)
+
+Run `k6-20261116T105354Z`, k6 v2.4.0 (installed with `brew install k6`), same API code and scenarios, uvicorn with 1 worker. Commands:
+
+```bash
+k6 run -e BASE_URL=http://127.0.0.1:8000 -e SCENARIO=<vu1|vu10|vu25|vu50> -e LABEL=local -e DURATION=30s experiments/k6/load_test.js
+python experiments/analysis/collect_results.py --environment "local Darwin arm64, uvicorn 1 worker, Python 3.14, k6 v2.4.0"
+python experiments/analysis/analyze_results.py --write experiments/results/local_k6_summary.md
+python experiments/analysis/generate_charts.py --prefix local_k6
+```
+
+| VUs | Requests | Errors | Req/s | Avg ms | Median ms | p90 ms | p95 ms | Max ms |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 30 | 0% | 0.99 | 4.62 | 4.72 | 5.13 | 5.17 | 5.51 |
+| 10 | 300 | 0% | 9.84 | 16.14 | 16.12 | 18.50 | 19.31 | 25.73 |
+| 25 | 750 | 0% | 24.27 | 29.07 | 29.81 | 32.96 | 34.42 | 41.63 |
+| 50 | 1468 | 0% | 47.35 | 31.42 | 35.92 | 46.09 | 48.85 | 53.52 |
+
+All k6 checks passed: status 200 and a recommendations array in every response.
+
 ## 5. Not tested here (with reason) — the team must run these
 
 | Item | Why not | Who / how |
@@ -83,7 +105,7 @@ Run `20261113T161410Z-494296`. Python httpx closed-loop client (k6 not installed
 | **AWS latency, concurrency** | Requires deployment | M3: `run_aws_experiments.sh` |
 | **Lambda cold starts** (Init Duration, count) | Requires deployment | M3: `experiments/cloudwatch/cold_start_queries.md` |
 | **Billed duration → cost per 1,000 requests** | Requires deployment + current prices | M3: `cost_model.py --duration-ms …` |
-| k6 execution (local or AWS) | k6 not installed; Python fallback used locally | M3: install k6, run the smoke scenario |
+| k6 execution against AWS | Requires deployment (local k6 run done 2026-11-16, see §4b) | M3: `run_aws_experiments.sh` |
 | CORS from a hosted frontend to API Gateway | Requires deployment | M3 |
 | W3C HTML validator / html-validate | Not installed; Python structural check used instead | Optional: `npx html-validate frontend/index.html` |
 | Windows `run_tests.ps1` | macOS machine | Any member on Windows |

@@ -52,6 +52,21 @@ Environment: MacBook (Darwin arm64), Python 3.14, uvicorn with 1 worker, client 
 
 ![Local latency](../experiments/charts/local_latency_vs_vus.png)
 
+### 7.4b Actual local measurement with k6 (2026-11-16)
+
+Same scenarios and API code, but with **k6 v2.4.0** as the client (the tool we will also use on AWS). Run `k6-20261116T105354Z`, MacBook (Darwin arm64), uvicorn with 1 worker. Raw k6 summaries are in `experiments/results/raw/k6_local_*.json`; the table is in [`local_k6_summary.md`](../experiments/results/local_k6_summary.md).
+
+| VUs | Requests | Errors | Req/s | Avg ms | Min ms | Median ms | p90 ms | p95 ms | Max ms |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 30 | 0% | 0.99 | 4.62 | 1.87 | 4.72 | 5.13 | 5.17 | 5.51 |
+| 10 | 300 | 0% | 9.84 | 16.14 | 9.93 | 16.12 | 18.50 | 19.31 | 25.73 |
+| 25 | 750 | 0% | 24.27 | 29.07 | 2.21 | 29.81 | 32.96 | 34.42 | 41.63 |
+| 50 | 1468 | 0% | 47.35 | 31.42 | 1.85 | 35.92 | 46.09 | 48.85 | 53.52 |
+
+![Local k6 latency](../experiments/charts/local_k6_latency_vs_vus.png)
+
+**Comparison with the Python-client run (7.4):** both runs show 0 errors, throughput matching the offered load, and latency rising with concurrency, because one local process queues the requests. The k6 numbers are higher at 10–50 VUs (p95 at 50 VUs: 48.9 ms vs 37.2 ms). The two runs used different client tools on different days, so this gap reflects differences between tools and between runs, not a change in the API. Use **k6 rows only** when comparing against AWS, so the client tool is the same on both sides.
+
 **How to read it:** a single local process serves every VU, so requests queue up and latency grows with concurrency (median 5.9 → 20.3 ms). Throughput tracks the offered load (about VUs × 1 rps), with no errors. These numbers have **no network hop to AWS and no Lambda**. They show that the application code is fast, and they **must not** be presented as cloud performance.
 
 **Hypothesis for AWS (to test, not a result):** latency will include tens of milliseconds of network time to the region, plus API Gateway overhead. Under load, Lambda should add execution environments instead of queueing, so p95 should grow less with VUs than it did locally. That holds except for occasional cold starts, which should appear as max/p99 outliers.

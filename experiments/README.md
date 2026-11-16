@@ -32,7 +32,8 @@ python experiments/analysis/cost_model.py --duration-ms <measured_billed_ms>
 
 | Experiment | Status |
 |---|---|
-| Local latency and concurrency (1/10/25/50 VUs) | ✅ Actual local measurement, 2026-11-13 ([results/local_summary.md](results/local_summary.md)) |
+| Local latency and concurrency (1/10/25/50 VUs), Python client | ✅ Actual local measurement, 2026-11-13 ([results/local_summary.md](results/local_summary.md)) |
+| Local latency and concurrency (1/10/25/50 VUs), k6 v2.4.0 | ✅ Actual local measurement, 2026-11-16 ([results/local_k6_summary.md](results/local_k6_summary.md)) |
 | AWS latency and concurrency | ⏳ Pending cloud measurement |
 | AWS cold starts | ⏳ Pending cloud measurement |
 | Cost per 1,000 requests | ⏳ Needs AWS billed duration + current prices |

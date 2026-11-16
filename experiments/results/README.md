@@ -11,7 +11,9 @@ Every row carries exactly one `measurement_label`:
 
 | File | Contents | Status |
 |---|---|---|
-| `local_results.csv` | Latency/throughput per scenario (columns in `analysis/results_schema.py`) | ✅ `actual_local` run `20261113T161410Z-494296` |
+| `local_results.csv` | Latency/throughput per scenario (columns in `analysis/results_schema.py`) | ✅ `actual_local` runs `20261113T161410Z-494296` (Python client) and `k6-20261116T105354Z` (k6) |
+| `local_k6_summary.md` | Markdown table for the k6 run | ✅ |
+| `raw/k6_local_*.json` | Full k6 end-of-test summaries (JSON) for the k6 run | ✅ |
 | `local_results.json` | The same rows as JSON, grouped by run | ✅ |
 | `local_summary.md` | Markdown table from `analyze_results.py` | ✅ |
 | `raw/local_samples_*.json` | Every individual latency sample (ms) | ✅ |
