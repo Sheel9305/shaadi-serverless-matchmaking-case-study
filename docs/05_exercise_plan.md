@@ -1,9 +1,5 @@
 # 5. Exercise plan
 
-> **Owner:** Bhaumik Luhar (202301468) · **Status:** Complete (Reviewed) · **Timeline diagram:** [project_timeline.mmd](diagrams/project_timeline.mmd)
-
-![Timeline](diagrams/rendered/project_timeline.png)
-
 ## 5.1 Course exercise requirement
 
 *"Build a serverless function with an API trigger. Study cold starts and the cost per 1,000 requests."*
@@ -19,8 +15,8 @@
 
 | Week | Goal | Bhaumik (202301468) | Sheel (202301420) | Nakul (202301261) | Exit check |
 |---|---|---|---|---|---|
-| 1 ✅ | Research | Case-study research (all) | Case-study research | Case-study research | Week 1 summary |
-| 2 ✅ | Foundations | Verify sources; draft 02 | Dataset, models, scoring | Frontend skeleton; k6 scenarios | Unit tests pass (110 passed) |
+| 1 | Research | Case-study research (all) | Case-study research | Case-study research | Week 1 summary |
+| 2 | Foundations | Verify sources; draft 02 | Dataset, models, scoring | Frontend skeleton; k6 scenarios | Unit tests pass (110 passed) |
 | 3 ✅ | Build | Diagrams; docs 03/04 | API, Lambda handler, logging | Frontend ↔ local API; result scripts | Local demo works |
 | 4 ✅ | Cloud | Report draft & case study | SAM deploy; IAM; logs | AWS load tests; cold starts; cost | Real AWS numbers |
 | 5 ⏳ | Integrate | Final report + slides | Fixes, reviews | Validation report | Submission + viva |

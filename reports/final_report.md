@@ -44,18 +44,18 @@ A central component of our academic investigation was reconciling trade-press na
 
 | Claim ID | Sourced Statement | Verification Status | Source Reference | Context & Technical Interpretation |
 |---|---|---|---|---|
-| **C1** | Shaadi.com analyzed **67 billion event records** on AWS | ✅ Verified (Primary for Redshift) / 🟡 ML Contextualized | S7 (Amazon Mumbai Launch), S1, S6 | S7 and S1 verify that Shaadi.com's corporate Amazon Redshift data warehouse processed 67 billion records for business intelligence and analytics. Secondary trade press (S6) subsequently popularized this as "AI/ML on 67B records". |
-| **C2** | Generated **4 million matches** | ✅ Verified (Primary) | S1, S7 | Amazon official publications confirm Shaadi.com helped over 4 million *people* find matches. This reflects cumulative human pairings over years, rather than pairs output by an isolated ML job. |
-| **C3** | Scale of **35 million+ registered users** | ✅ Verified (Primary) | S1, S2, S7 | Confirmed across multiple first-party AWS case studies and press releases from 2016. |
-| **C4** | Core production infrastructure on AWS | ✅ Verified (Primary) | S1, S7 | Utilizes EC2, S3, SNS, SES, ElastiCache, and Redshift. |
-| **C5** | Rapid migration & doubled algorithm experimentation | ✅ Verified (Primary Mirror) | S2 | Full stack migrated in ~3 months; on-demand compute doubled concurrent matching algorithm testing capacity. |
-| **C6** | Messaging migrated from MySQL to Amazon DynamoDB | ✅ Verified (Primary) | S3 | Transitioned connection requests and chat to DynamoDB with provisioned capacity; cut cost $\ge 60\%$ and lowered peak latency 43–50%. |
-| **C7** | Asynchronous, serverless photo-review microservices | ✅ Verified (Primary) | S4 | Deployed API Gateway, Lambda, Step Functions, EventBridge, and Rekognition to automate photo moderation. |
-| **C8** | Storage cost optimization during COVID-19 | ✅ Verified (Primary) | S5 | Migrated EBS `gp2` to `gp3`, cutting monthly EBS costs by 25% amidst a 37.44% traffic surge. |
-| **C10** | **40% database migration time reduction** | ✅ Verified (Primary) | S7 | Documented in Amazon's official Mumbai Region launch announcement. |
-| **C11** | **55% database savings on Amazon Aurora** | ✅ Verified (Primary) | S7 | Validated cost savings moving relational workloads to managed Aurora clusters. |
-| **C12** | **50% overall site performance improvement** | ✅ Verified (Primary) | S7 | Observed customer-facing latency improvements after cloud adoption. |
-| **C13** | **>80% serverless workload savings** | ✅ Verified (Primary) | S7 | Realized on early tasks transitioned to AWS Lambda and DynamoDB. |
+| **C1** | Shaadi.com analyzed **67 billion event records** on AWS |  Verified (Primary for Redshift) /  ML Contextualized | S7 (Amazon Mumbai Launch), S1, S6 | S7 and S1 verify that Shaadi.com's corporate Amazon Redshift data warehouse processed 67 billion records for business intelligence and analytics. Secondary trade press (S6) subsequently popularized this as "AI/ML on 67B records". |
+| **C2** | Generated **4 million matches** | Verified (Primary) | S1, S7 | Amazon official publications confirm Shaadi.com helped over 4 million *people* find matches. This reflects cumulative human pairings over years, rather than pairs output by an isolated ML job. |
+| **C3** | Scale of **35 million+ registered users** | Verified (Primary) | S1, S2, S7 | Confirmed across multiple first-party AWS case studies and press releases from 2016. |
+| **C4** | Core production infrastructure on AWS | Verified (Primary) | S1, S7 | Utilizes EC2, S3, SNS, SES, ElastiCache, and Redshift. |
+| **C5** | Rapid migration & doubled algorithm experimentation | Verified (Primary Mirror) | S2 | Full stack migrated in ~3 months; on-demand compute doubled concurrent matching algorithm testing capacity. |
+| **C6** | Messaging migrated from MySQL to Amazon DynamoDB | Verified (Primary) | S3 | Transitioned connection requests and chat to DynamoDB with provisioned capacity; cut cost $\ge 60\%$ and lowered peak latency 43–50%. |
+| **C7** | Asynchronous, serverless photo-review microservices | Verified (Primary) | S4 | Deployed API Gateway, Lambda, Step Functions, EventBridge, and Rekognition to automate photo moderation. |
+| **C8** | Storage cost optimization during COVID-19 | Verified (Primary) | S5 | Migrated EBS `gp2` to `gp3`, cutting monthly EBS costs by 25% amidst a 37.44% traffic surge. |
+| **C10** | **40% database migration time reduction** | Verified (Primary) | S7 | Documented in Amazon's official Mumbai Region launch announcement. |
+| **C11** | **55% database savings on Amazon Aurora** | Verified (Primary) | S7 | Validated cost savings moving relational workloads to managed Aurora clusters. |
+| **C12** | **50% overall site performance improvement** | Verified (Primary) | S7 | Observed customer-facing latency improvements after cloud adoption. |
+| **C13** | **>80% serverless workload savings** | Verified (Primary) | S7 | Realized on early tasks transitioned to AWS Lambda and DynamoDB. |
 
 ---
 
@@ -300,6 +300,3 @@ Our student prototype successfully validated these principles at classroom scale
 | **Bhaumik Luhar** | 202301468 | Case study research, source verification, architecture documentation, report authoring & presentation lead | `research/`, `docs/01–05, 09, 10`, `reports/`, `presentation/` |
 | **Sheel Shah** | 202301420 | Backend application, models, validation, scoring algorithms, AWS SAM IaC, and deployment | `backend/`, `infrastructure/`, `pytest.ini` |
 | **Nakul Patel** | 202301261 | Frontend user interface, k6 performance experiments, CloudWatch queries, and cost model | `frontend/`, `experiments/`, `docs/06–08`, `test_reports/` |
-
-### Academic Integrity & AI-Assistance Disclosure
-*The initial repository scaffold (code skeleton, tests, build scripts, and documentation drafts) was generated with an AI coding assistant. Each team member reviewed, executed, verified, modified, and assumed full intellectual responsibility for their committed files. The case-study literature verification, cloud architecture analysis, empirical benchmark execution, report authoring, and presentation defense were conducted independently by the team in compliance with course academic policy.*

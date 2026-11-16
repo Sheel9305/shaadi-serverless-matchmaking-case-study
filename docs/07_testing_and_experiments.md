@@ -1,7 +1,5 @@
 # 7. Testing and experiments
 
-> Owner: Member 3 (experiments) and Member 2 (backend tests) · Diagram: [testing_workflow.mmd](diagrams/testing_workflow.mmd)
-
 ![Testing workflow](diagrams/rendered/testing_workflow.png)
 
 ## 7.1 Automated tests

@@ -1,10 +1,5 @@
 # 2. Shaadi.com case-study analysis
 
-> **Owner:** Bhaumik Luhar (202301468) · **Status:** Complete (Week 1 research merged)
-> Citations [S#] point to the source register in [research/sources.md](../research/sources.md). ✅ = verified (primary), 🟡 = partially verified.
-
----
-
 ## 2.1 Background
 
 Shaadi.com is one of the world's largest online matchmaking platforms, serving over 35 million members across the globe ✅ [S1, S2, S7]. Founded to modernize traditional matrimonial search, the platform pairs millions of users based on complex criteria including cultural background, education, location, profession, personal interests, and interactive behavioral signals. 

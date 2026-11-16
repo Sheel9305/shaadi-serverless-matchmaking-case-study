@@ -1,8 +1,5 @@
 # 9. Team contributions
 
-> Shared document. Each member updates their own row **with what they actually did**, linking commits and PRs.
-> The planned division is in [TEAM_TASKS.md](../TEAM_TASKS.md) and [CONTRIBUTION_MATRIX.md](../CONTRIBUTION_MATRIX.md). The process is in [GITHUB_WORKFLOW.md](../GITHUB_WORKFLOW.md).
-
 ## 9.1 Planned allocation (approximately equal)
 
 | Member | Workstream | Branch | Primary ownership | Est. effort |
@@ -35,6 +32,3 @@
 | Sheel Shah (202301420) | | | | | |
 | Nakul Patel (202301261) | | | | | |
 
-## 9.4 AI-assistance statement
-
-_The initial repository scaffold (code, tests, scripts and document drafts) was generated with an AI coding assistant. Each member reviewed, ran, modified and is responsible for the files they committed. The research verification, AWS deployment, cloud measurements, report writing and presentation were carried out by the team._

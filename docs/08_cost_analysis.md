@@ -1,6 +1,5 @@
 # 8. Cost analysis: cost per 1,000 requests
 
-> Owner: Member 3 · Script: [`experiments/analysis/cost_model.py`](../experiments/analysis/cost_model.py) · Inputs: [`experiments/configs/cost_inputs.json`](../experiments/configs/cost_inputs.json)
 >
 > **Prices are dated, never hard-coded in code.** They live only in `cost_inputs.json`, together with the date they were checked
 > and their source. The current values were taken on **2026-11-16** from the official **AWS Price List API** offer files for ap-south-1.

@@ -1,7 +1,5 @@
 # 1. Project overview
 
-> **Owner:** Bhaumik Luhar (202301468) · **Status:** Complete (Reviewed) · **Group:** 49 (IT457 Cloud Computing)
-
 ## 1.1 Purpose
 
 This IT457 group project studies how **Shaadi.com**, a large online matchmaking service, uses Amazon Web Services. We then build a **small serverless prototype** that demonstrates the same cloud computing principles at classroom scale.

@@ -1,10 +1,5 @@
 # Salient points: Shaadi.com case study → our prototype
 
-> **Owner:** Bhaumik Luhar (202301468) · **Last updated:** 2026-11-14
->
-> Each point says where it comes from (**[S#]** = [sources.md](sources.md)) and how our student prototype demonstrates that cloud computing concept.
-> Real-world points describe Shaadi.com's production cloud usage. *Prototype* points describe our simplified IT457 implementation.
-
 ---
 
 | # | Real-world point (sourced) | Cloud concept | How our prototype reflects it (simplified) |

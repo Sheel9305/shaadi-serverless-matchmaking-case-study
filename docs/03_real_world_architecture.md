@@ -1,6 +1,6 @@
 # 3. Real-world architecture: what is publicly known
 
-> **Owner:** Bhaumik Luhar (202301468) · **Status:** Complete · **Diagram:** [case_study_overview.mmd](diagrams/case_study_overview.mmd) ([SVG](diagrams/rendered/case_study_overview.svg))
+> **Diagram:** [case_study_overview.mmd](diagrams/case_study_overview.mmd) ([SVG](diagrams/rendered/case_study_overview.svg))
 
 ![Case-study overview](diagrams/rendered/case_study_overview.png)
 

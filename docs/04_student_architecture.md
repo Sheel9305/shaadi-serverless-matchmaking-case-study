@@ -1,7 +1,5 @@
 # 4. Student prototype architecture
 
-> **Owners:** Sheel Shah (202301420 — technical implementation) and Bhaumik Luhar (202301468 — architecture documentation & review). This page describes **our** academic prototype only.
-
 ![Student architecture](diagrams/rendered/student_architecture.png)
 
 Diagrams: [student_architecture](diagrams/student_architecture.mmd) · [request_flow](diagrams/request_flow.mmd) · [recommendation_flow](diagrams/recommendation_flow.mmd) · [deployment_architecture](diagrams/deployment_architecture.mmd)

@@ -1,8 +1,5 @@
 # 6. Deployment and monitoring guide
 
-> Owner: Member 3 (runbook) with Member 2 (template) · Diagram: [deployment_architecture.mmd](diagrams/deployment_architecture.mmd)
-> **Status: not yet deployed.** No AWS credentials were used while preparing this repository.
-
 ![Deployment](diagrams/rendered/deployment_architecture.png)
 
 ## 6.1 Prerequisites

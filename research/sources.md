@@ -1,19 +1,14 @@
 # Case-study sources and verification status
 
-> **Owner:** Bhaumik Luhar (202301468) · **Last updated:** 2026-11-14 (Week 1 research integrated)
->
-> Rule for the whole project: a figure goes into the report as a **fact** only if a cited primary source supports it.
-> Everything else is labelled a **claim** and explicitly names where it originated.
-
 ---
 
 ## Verification legend
 
 | Status | Meaning |
 |---|---|
-| ✅ Verified (primary) | Stated by AWS or Shaadi.com in an official, first-party publication (press release, official blog, technical post) |
-| 🟡 Partially verified | Stated by a credible secondary source (e.g. tech press), or a primary source says something similar but contextually nuanced |
-| ⏳ Unverified | Mentioned only in informal course notes, or no authoritative corroborating source has been identified |
+| Verified (primary) | Stated by AWS or Shaadi.com in an official, first-party publication (press release, official blog, technical post) |
+| Partially verified | Stated by a credible secondary source (e.g. tech press), or a primary source says something similar but contextually nuanced |
+| Unverified | Mentioned only in informal course notes, or no authoritative corroborating source has been identified |
 
 ---
 
@@ -36,7 +31,7 @@
 
 | # | Claim | Status | Evidence | Notes for the Report & Viva |
 |---|---|---|---|---|
-| **C1** | Shaadi.com analyzed **67 billion event records** on AWS | ✅ Verified (primary) for Redshift BI / 🟡 Contextualized for ML | S7, S1, S6, S0 | S7 (Amazon official press announcement, June 2016) verifies that Shaadi.com's Redshift data warehouse analyzed 67 billion records for business trends. S6 (trade press) popularized this as "AI/ML on 67B records". We report the verified Redshift BI role and clarify the trade press ML context. |
+| **C1** | Shaadi.com analyzed **67 billion event records** on AWS | Verified (primary) for Redshift BI / Contextualized for ML | S7, S1, S6, S0 | S7 (Amazon official press announcement, June 2016) verifies that Shaadi.com's Redshift data warehouse analyzed 67 billion records for business trends. S6 (trade press) popularized this as "AI/ML on 67B records". We report the verified Redshift BI role and clarify the trade press ML context. |
 | **C2** | Shaadi.com enabled **4 million matches** | ✅ Verified (primary) | S1, S7, S6 | S1 and S7 verify that Shaadi.com helped *"over 4 million people find matches"*. In the report, we distinguish that this counts 4 million *people*, not automated match pairs output by a single ML model. |
 | **C3** | Shaadi.com touched **35M+ people** / 35M+ registered users | ✅ Verified (primary) | S1, S2, S7 | Confirmed in multiple primary AWS announcements from 2016. |
 | **C4** | Core production infrastructure runs on AWS: EC2, S3, SNS, SES, ElastiCache, Redshift | ✅ Verified (primary) | S1, S7 | Foundational AWS architecture established during cloud migration. |
