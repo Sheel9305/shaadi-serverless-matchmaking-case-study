@@ -27,7 +27,8 @@ curl -fsS "${BASE_URL}/health" >/dev/null || { echo "API did not start"; exit 1;
 
 if command -v k6 >/dev/null 2>&1; then
   for s in vu1 vu10 vu25 vu50; do
-    k6 run -e BASE_URL="$BASE_URL" -e SCENARIO="$s" -e LABEL=local -e DURATION="${DURATION}s" experiments/k6/load_test.js
+    k6 run -e BASE_URL="$BASE_URL" -e SCENARIO="$s" -e LABEL=local -e DURATION="${DURATION}s" experiments/k6/load_test.js \
+    || echo "WARNING: k6 thresholds crossed for $s (errors or slow p95); result is still recorded"
   done
   "$PY" experiments/analysis/collect_results.py --environment "local $(uname -sm), uvicorn 1 worker"
 else

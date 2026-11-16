@@ -75,11 +75,18 @@ def render(inputs: dict, result: dict) -> str:
         "",
         "Cost lines (USD):",
     ]
+    missing_duration = u["gb_seconds"] is None
     for name, value in result["lines"].items():
-        out.append(f"  {name:<27}: {'PRICE REQUIRED' if value is None else f'${value:.6f}'}")
+        if value is not None:
+            text = f"${value:.6f}"
+        elif name == "Lambda compute" and missing_duration:
+            text = "NEEDS BILLED DURATION"
+        else:
+            text = "PRICE REQUIRED"
+        out.append(f"  {name:<27}: {text}")
     out.append(
         f"  {'TOTAL (before free tier)':<27}: "
-        + ("incomplete - fill all prices" if result["total"] is None else f"${result['total']:.6f}")
+        + ("incomplete - see lines above" if result["total"] is None else f"${result['total']:.6f}")
     )
     out.append("")
     out.append("Free tier: check current AWS Free Tier terms for your account; not applied in this estimate.")
