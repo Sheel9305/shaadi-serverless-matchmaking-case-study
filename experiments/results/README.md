@@ -19,7 +19,10 @@ Every row carries exactly one `measurement_label`:
 | `raw/local_samples_*.json` | Every individual latency sample (ms) | ✅ |
 | `cloud_results_template.csv` | Same columns; one `pending_cloud` row per scenario | ⏳ template |
 | `cold_start_template.csv` | Columns for cold vs. warm observations | ⏳ template |
-| `cloud_results.csv` | Created by `collect_results.py` after the AWS k6 runs | ⏳ not yet created |
-| `raw/k6_*.json` | k6 summaries written by `load_test.js` | ⏳ |
+| `cloud_results.csv` | AWS k6 runs | ✅ `actual_aws` run `k6-20261116T162319Z` |
+| `cloud_summary.md` | Markdown table of the AWS run | ✅ |
+| `cold_start_results.csv` | Client-side cold vs warm latency on AWS (Lambda fields pending CloudWatch) | ✅ partial |
+| `raw/cold_probe_aws_20261116.json` | Raw cold-start probe (11 requests) | ✅ |
+| `raw/k6_aws_*.json` | k6 summaries of the AWS run | ✅ |
 
 Do not edit measured rows by hand. Re-run the experiment instead. Keep failed or odd runs and add a note rather than deleting them.

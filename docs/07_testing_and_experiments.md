@@ -71,7 +71,7 @@ Same scenarios and API code, but with **k6 v2.4.0** as the client (the tool we w
 
 **Hypothesis for AWS (to test, not a result):** latency will include tens of milliseconds of network time to the region, plus API Gateway overhead. Under load, Lambda should add execution environments instead of queueing, so p95 should grow less with VUs than it did locally. That holds except for occasional cold starts, which should appear as max/p99 outliers.
 
-## 7.5 AWS experiment procedure (pending)
+## 7.5 AWS experiment procedure
 
 1. Deploy (doc 06). Record region, memory and architecture.
 2. `API_URL=… bash experiments/run_aws_experiments.sh` runs the 4 scenarios, imports rows as `actual_aws`, then analyses and charts them.
@@ -81,6 +81,61 @@ Same scenarios and API code, but with **k6 v2.4.0** as the client (the tool we w
    - (c) Fill `experiments/results/cold_start_template.csv` → `cold_start_results.csv` with label `actual_aws`.
 4. **Billed duration** → average of `@billedDuration` → `cost_inputs.json` → `cost_model.py`.
 5. Compare local and AWS **in text**. Keep them as separate tables and charts.
+
+## 7.5b Actual AWS measurement (2026-11-16)
+
+**Deployment:** stack `shaadi-recommendation-dev`, ap-south-1 (Mumbai), Lambda python3.12, 512 MB, x86_64, API Gateway HTTP API (throttle 50 rps / burst 100).
+**Client:** k6 v2.4.0 on a MacBook (Darwin arm64) in India, over the public internet. Each scenario ran 30 s with 1 s think time, against `POST /recommendations`.
+**Files:** `experiments/results/cloud_results.csv`, [`cloud_summary.md`](../experiments/results/cloud_summary.md), `raw/k6_aws_*.json`, `cold_start_results.csv`, `raw/cold_probe_aws_20261116.json`.
+
+### Functional check on AWS
+
+| Check | Result |
+|---|---|
+| `GET /health` | 200, `environment: dev`, 64 profiles |
+| README example request | 200, top results U161 = 97, U162 = 80, U133 = 62 (identical to local) |
+| Invalid JSON / missing body / age 12 / no matches | 400 / 400 / 422 / 200 with message ✅ |
+| Unknown path | 404 `{"message":"Not Found"}` from API Gateway (only our 2 routes are forwarded to Lambda) |
+| CORS preflight from `http://localhost:5500` | 204, `access-control-allow-origin: *` ✅ |
+| Frontend (headless Chrome) against the AWS URL | All flows pass. Screenshots in `reports/figures/frontend_*_aws.png` |
+
+### Latency and concurrency (run `k6-20261116T162319Z`)
+
+| VUs | Requests | Errors | Req/s | Avg ms | Min ms | Median ms | p90 ms | p95 ms | Max ms |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 26 | 0% | 0.85 | 75.44 | 63.99 | 73.25 | 90.13 | 92.33 | 110.87 |
+| 10 | 283 | 0% | 9.12 | 66.54 | 27.84 | 56.00 | 70.79 | 82.17 | 1466.40 |
+| 25 | 563 | 0% | 18.18 | 56.30 | 28.04 | 56.93 | 73.77 | 85.19 | 440.86 |
+| 50 | 1446 | **5.50%** | 46.55 | 49.70 | 22.06 | 54.46 | 68.87 | 72.33 | 322.35 |
+
+![AWS latency](../experiments/charts/aws_latency_vs_vus.png)
+
+**Local (k6, 7.4b) vs AWS (k6), p95:**
+
+| VUs | Local p95 ms | AWS p95 ms |
+|---:|---:|---:|
+| 1 | 5.17 | 92.33 |
+| 10 | 19.31 | 82.17 |
+| 25 | 34.42 | 85.19 |
+| 50 | 48.85 | 72.33 |
+
+**Interpretation**
+1. **The network dominates single-request latency.** The application itself needs about 2.5 ms per request on AWS (`X-Response-Time-Ms`). The rest of the roughly 50–75 ms is the internet round trip, TLS, API Gateway and Lambda invocation overhead.
+2. **AWS latency does not grow with concurrency, unlike local.** Local p95 rises about 9× from 1 to 50 VUs, because one uvicorn process queues the requests. On AWS, p95 stays at about 72–92 ms, because Lambda serves concurrent requests in separate execution environments. This is the elasticity property of serverless, observed directly.
+3. **Scale-out cold starts show up in the maximum, not the percentiles.** The 1,466 ms maximum at 10 VUs fits a new execution environment being initialised during scale-up. p95 is unaffected because such requests are rare. (Confirm with the `Init Duration` count from CloudWatch.)
+4. **Errors at 50 VUs are HTTP 503s, not API Gateway throttling (429).** A follow-up burst test (3 rounds of 50 simultaneous requests) returned 503 `{"message":"Service Unavailable"}` for 16 → 2 → 0 requests as the environments warmed up. A 503 from an HTTP API Lambda integration usually means Lambda throttled the invocation. **Hypothesis (to verify):** the account's concurrent-execution quota is low (new accounts often start at 10 instead of 1,000). Verify with `aws lambda get-account-settings` (`ConcurrentExecutions`) and the Lambda **Throttles** metric for 16:22–16:24 UTC. Failed requests return quickly, which slightly lowers the 50-VU latency figures.
+5. Fewer requests than the ideal VUs × 30 were completed at 25 VUs (563 vs about 710). The cause is not yet explained; check the CloudWatch metrics for that window.
+
+### Cold start: client-side view (`cold_start_results.csv`)
+
+| Request | Client latency | App time (server) |
+|---|---:|---:|
+| 1st request after an idle period | **1,722.96 ms** | 3.79 ms |
+| Next 10 requests, 1 s apart | 43.7–64.6 ms (mean 51.5 ms) | 2.3–4.0 ms |
+
+The first request was about **33× slower** than the warm ones, while the application code itself took under 4 ms in both cases. So the extra time is spent before our handler runs: creating the execution environment, starting Python, importing FastAPI/Pydantic and loading the dataset. Part of the first request's time is also a new HTTPS connection (DNS + TLS). **CloudWatch's `Init Duration` (pending) separates the Lambda part.** A one-off 6.3 s browser health check during the frontend test is *not* reported as a measurement; check it against CloudWatch.
+
+**Pending (needs CloudWatch access):** `Init Duration` per cold start, number of cold starts during the k6 run, average **billed duration** (needed for the cost model), and the Throttles metric.
 
 ## 7.6 Cold starts explained
 

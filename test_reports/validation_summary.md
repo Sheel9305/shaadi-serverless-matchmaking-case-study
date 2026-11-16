@@ -62,6 +62,8 @@ Note: the first `sam validate` call sent SAM CLI's default anonymous usage telem
 | 8 | Browser requested a missing `/favicon.ico` (404 in console) | Inline empty favicon | Browser e2e re-run ✅ |
 | 9 | Logs Insights query Q4 used an invalid `sum()` on a string | Rewritten as `stats count(*) by first_inv` | Not executed (AWS only) |
 | 10 | (2026-11-16) k6 v2.4.0: `handleSummary` crashed (`Cannot read property 'vus' of undefined`), so no summary JSON was saved | Read VUs/duration from `SCENARIOS`/`__ENV` instead of `options` | k6 smoke run saves JSON ✅ |
+| 12 | (2026-11-16) `run_*_experiments.sh` aborted after the first k6 scenario that crossed a threshold (`set -e`), so results were not imported | Continue with a warning; results are still recorded | AWS import ✅ |
+| 13 | (2026-11-16) `cost_model.py` printed "PRICE REQUIRED" when the billed duration, not a price, was missing | Separate message | ✅ |
 | 11 | (2026-11-16) `collect_results.py` gave every k6 file its own `run_id`, so "latest run" charts showed only the 50-VU scenario | One shared `run_id` per import batch | 4-scenario k6 import + charts ✅ |
 
 ## 4. Local experiment (Actual local measurement)
@@ -95,18 +97,33 @@ python experiments/analysis/generate_charts.py --prefix local_k6
 
 All k6 checks passed: status 200 and a recommendations array in every response.
 
+## 4c. AWS verification and measurement (Actual AWS measurement, 2026-11-16)
+
+Deployed API: `https://tkylvibnsi.execute-api.ap-south-1.amazonaws.com` (stack `shaadi-recommendation-dev`, ap-south-1, 512 MB, x86_64). Client: k6 v2.4.0 / Python httpx / headless Chrome on a MacBook in India.
+
+| Check | Command | Result |
+|---|---|---|
+| Cold-start probe (1 + 10 requests, 1 s apart) | scratch `cold_probe.py` → `experiments/results/cold_start_results.csv` | ✅ first 1,722.96 ms; warm 43.7–64.6 ms; app time 2.3–4.0 ms |
+| Health, example request, 400/400/422/200/404 cases | `curl` | ✅ all as expected; U161 = 97 identical to local |
+| CORS preflight | `curl -X OPTIONS … -H Origin: http://localhost:5500` | ✅ 204, allow-origin `*` |
+| Frontend against AWS | headless Chrome (Puppeteer) | ✅ all flows; screenshots `reports/figures/frontend_*_aws.png` |
+| Load test 1/10/25/50 VUs × 30 s | `API_URL=… bash experiments/run_aws_experiments.sh` | ✅ run `k6-20261116T162319Z`; p95 72–92 ms; **5.5% errors at 50 VUs** |
+| Error diagnosis | 3 bursts of 50 simultaneous requests | 503 "Service Unavailable" ×16 → ×2 → ×0 (likely Lambda throttling; verify quota) |
+| Response size | `curl -w %{size_download}` | 1,919 B body + 234 B headers (top 5) |
+| Prices | AWS Price List API (ap-south-1 offer files) | ✅ filled in `cost_inputs.json`, checked 2026-11-16 |
+
 ## 5. Not tested here (with reason) — the team must run these
 
 | Item | Why not | Who / how |
 |---|---|---|
 | `sam build` | No Python 3.12 and no Docker on this machine | M2: install Python 3.12 or Docker, then `sam build` |
 | `sam local invoke` / `start-api` | Needs Docker | M2 |
-| **AWS deployment** | No AWS credentials used (by design) | M2: `sam deploy --guided` |
-| **AWS latency, concurrency** | Requires deployment | M3: `run_aws_experiments.sh` |
-| **Lambda cold starts** (Init Duration, count) | Requires deployment | M3: `experiments/cloudwatch/cold_start_queries.md` |
-| **Billed duration → cost per 1,000 requests** | Requires deployment + current prices | M3: `cost_model.py --duration-ms …` |
-| k6 execution against AWS | Requires deployment (local k6 run done 2026-11-16, see §4b) | M3: `run_aws_experiments.sh` |
-| CORS from a hosted frontend to API Gateway | Requires deployment | M3 |
+| **AWS deployment** | Deployed by M2 (Sheel) to ap-south-1; verified by M3 on 2026-11-16 (see §4c) | ✅ done |
+| **AWS latency, concurrency** | ✅ done 2026-11-16 (§4c) | — |
+| **Lambda cold starts** (Init Duration, count) | Client side done; Lambda `Init Duration` needs CloudWatch access | M2/M3: queries Q1–Q2 |
+| **Billed duration → cost per 1,000 requests** | Prices filled (2026-11-16); billed duration needs CloudWatch | M2/M3: query Q3 |
+| Lambda Throttles metric / account concurrency quota | Explains the 503s at 50 VUs (§4c) | M2: `aws lambda get-account-settings` |
+| CORS from the frontend to API Gateway | ✅ preflight 204 + browser test against AWS (§4c) | — |
 | W3C HTML validator / html-validate | Not installed; Python structural check used instead | Optional: `npx html-validate frontend/index.html` |
 | Windows `run_tests.ps1` | macOS machine | Any member on Windows |
 

@@ -2,9 +2,10 @@
 
 > Owner: Member 3 · Script: [`experiments/analysis/cost_model.py`](../experiments/analysis/cost_model.py) · Inputs: [`experiments/configs/cost_inputs.json`](../experiments/configs/cost_inputs.json)
 >
-> **No AWS prices are written in this repository.** Prices change and differ by region. Look them up on the
-> [AWS Pricing Calculator](https://calculator.aws/), the [Lambda pricing page](https://aws.amazon.com/lambda/pricing/) and the
-> [API Gateway pricing page](https://aws.amazon.com/api-gateway/pricing/), and record the **date** you checked.
+> **Prices are dated, never hard-coded in code.** They live only in `cost_inputs.json`, together with the date they were checked
+> and their source. The current values were taken on **2026-11-16** from the official **AWS Price List API** offer files for ap-south-1.
+> Prices change, so re-check them on the [AWS Pricing Calculator](https://calculator.aws/), the [Lambda pricing page](https://aws.amazon.com/lambda/pricing/) and the
+> [API Gateway pricing page](https://aws.amazon.com/api-gateway/pricing/) before the final report.
 
 ## 8.1 Billable items for one request
 
@@ -31,43 +32,64 @@ Cost(N)           = sum of the above  (before Free Tier)
 
 With N = 1,000 and 512 MB, the only measured input is **average billed duration**, which comes from the `REPORT` lines on AWS.
 
-## 8.3 Inputs table (fill in after the AWS experiment)
+## 8.3 Inputs table
 
 | Input | Value | Source / status |
 |---|---|---|
-| Region | ap-south-1 (change if needed) | samconfig.toml |
+| Region | ap-south-1 (Mumbai) | samconfig.toml (deployed stack) |
 | Memory | 512 MB | template parameter |
 | Architecture | x86_64 | template |
-| Avg billed duration (warm) | **⏳ pending AWS measurement** | Logs Insights query Q3 |
-| Avg billed duration (incl. cold) | **⏳ pending AWS measurement** | Q3 |
-| Cold-start share in test | **⏳ pending** | Q1 |
-| Lambda price per 1M requests | **⏳ check calculator** | date: ____ |
-| Lambda price per GB-s | **⏳ check calculator** | date: ____ |
-| HTTP API price per 1M requests | **⏳ check calculator** | date: ____ |
-| CloudWatch Logs ingestion per GB | **⏳ check calculator** | date: ____ |
-| Data transfer out per GB | **⏳ check calculator** | date: ____ |
+| Avg billed duration (warm) | **⏳ pending CloudWatch** | Logs Insights query Q3 |
+| Avg billed duration (incl. cold) | **⏳ pending CloudWatch** | Q3 |
+| Cold-start share in test | **⏳ pending CloudWatch** | Q1/Q2 |
+| Lambda price per 1M requests | **$0.20** | Price List API `AWSLambda`, usage type `APS3-Request` (published 2026-11-11), checked 2026-11-16 |
+| Lambda price per GB-s (x86, Tier 1) | **$0.0000166667** | `APS3-Lambda-GB-Second` (same file) |
+| HTTP API price per 1M requests (first 300M) | **$1.05** | `AmazonApiGateway`, `APS3-ApiGatewayHttpRequest` (published 2026-11-12) |
+| CloudWatch Logs ingestion per GB (Standard) | **$0.67** | `AmazonCloudWatch`, `APS3-DataProcessing-Bytes` (published 2026-11-04) |
+| Data transfer out per GB (first 10 TB after free 100 GB) | **$0.1093** | `AWSDataTransfer`, `APS3-DataTransfer-Out-Bytes` (published 2026-11-11) |
+| *(for comparison)* Lambda GB-s, arm64 | $0.0000133334 | `APS3-Lambda-GB-Second-ARM`: 20% cheaper compute |
+| Free tier (not applied) | 1M Lambda requests, 400,000 GB-s/month; 100 GB data out/month; 5 GB logs | same offer files |
+
+Price List API URL pattern: `https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/<service>/current/ap-south-1/index.json`.
 
 ## 8.4 Running the model
 
 ```bash
-python experiments/analysis/cost_model.py                          # shows usage; prices marked PRICE REQUIRED
-python experiments/analysis/cost_model.py --duration-ms <measured> # after the AWS run
+python experiments/analysis/cost_model.py                          # prices filled; billed duration pending
+python experiments/analysis/cost_model.py --duration-ms <measured> # after the CloudWatch query
 ```
 
-Current output (no prices, no AWS duration yet):
+**Current output** (actual prices, billed duration still pending):
 
 ```
 Cost model for 1,000 requests  (region: ap-south-1, memory: 512 MB, arch: x86_64)
-Prices checked on: NOT YET CHECKED
+Prices checked on: 2026-11-16
   Average billed duration : PENDING AWS MEASUREMENT ms
   Lambda GB-seconds       : needs avg billed duration
   Lambda requests         : 1,000
   API Gateway requests    : 1,000
   Log data ingested       : 0.8583 MB
-  Data transferred out    : 2.9297 MB
-  ...
-  TOTAL (before free tier): incomplete - fill all prices
+  Data transferred out    : 2.0508 MB
+Cost lines (USD):
+  Lambda compute             : NEEDS BILLED DURATION
+  Lambda requests            : $0.000200
+  API Gateway (HTTP API)     : $0.001050
+  CloudWatch Logs ingestion  : $0.000562
+  Data transfer out          : $0.000219
+  TOTAL (before free tier)   : incomplete - see lines above
 ```
+
+**What we can already say from the known lines:** before the compute line is added, 1,000 requests cost **$0.002031** (about 0.2 US cents). **API Gateway is about half of that** ($0.00105). Compute depends on billed duration. The handler's own work takes about 2.5 ms, so billed duration is likely to be a few milliseconds, which would keep compute far below the API Gateway charge. **This is an expectation until CloudWatch confirms it.**
+
+### Sensitivity of the total to billed duration (*illustrative*: the durations are assumed, the prices are real)
+
+| Assumed billed duration | GB-s per 1,000 | Lambda compute | Total per 1,000 (before free tier) |
+|---:|---:|---:|---:|
+| 3 ms | 1.5 | $0.000025 | $0.002055 |
+| 10 ms | 5 | $0.000083 | $0.002114 |
+| 50 ms | 25 | $0.000417 | $0.002447 |
+
+Data transfer uses the **measured** response size (2.1 KB). The log line uses an **assumed** 900 B per request; replace it with the CloudWatch `IncomingBytes` figure. Replace this table with the single measured value once Q3 has been run.
 
 ### Worked example of the arithmetic (*illustrative*; numbers invented for teaching, **not** a result)
 
