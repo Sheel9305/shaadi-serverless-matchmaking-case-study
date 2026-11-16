@@ -13,8 +13,8 @@
 | 7 | How a recommendation is scored | Sheel Shah | Filters + weights 30/25/15/30 + reasons | [recommendation_flow.png](../docs/diagrams/rendered/recommendation_flow.png) |
 | 8 | **Live demo** | Nakul Patel | Health dot → U001 → no-match → invalid age (422) → raw JSON | Browser (AWS URL; fall back to localhost and say so) |
 | 9 | Testing | Nakul Patel | 110 tests, 99% coverage, static checks, SAM lint | [testing_workflow.png](../docs/diagrams/rendered/testing_workflow.png) |
-| 10 | Performance | Nakul Patel | Local table (actual) ⏳ vs. AWS table; cold-start count and Init Duration ⏳ | [local chart](../experiments/charts/local_latency_vs_vus.png) + ⏳ aws chart |
-| 11 | Cost per 1,000 requests | Nakul Patel | Formula, measured billed duration ⏳, dated prices ⏳ | Cost table |
+| 10 | Performance | Nakul Patel | Local table (actual) vs. AWS table (actual); Init Duration about 1.1 s; 503s at 50 VUs | [local chart](../experiments/charts/local_latency_vs_vus.png) + [aws chart](../experiments/charts/aws_latency_vs_vus.png) |
+| 11 | Cost per 1,000 requests | Nakul Patel | Formula, measured billed duration 12.6 ms, prices dated 2026-11-16 → $0.0025 per 1,000; logs cost 9× compute | Cost table |
 | 12 | Limitations, future work, team | All (Bhaumik, Sheel, Nakul) | Auth, real DB, ML experiment; who did what | [github_workflow.png](../docs/diagrams/rendered/github_workflow.png) |
 
 **Rehearsal checklist:** each person rehearses with a timer · demo tested 1 hour before on the venue network · offline fallback (localhost + screenshots) ready · all members read [docs/10_viva_questions.md](../docs/10_viva_questions.md).

@@ -22,18 +22,18 @@
 | 1 ✅ | Research | Case-study research (all) | Case-study research | Case-study research | Week 1 summary |
 | 2 ✅ | Foundations | Verify sources; draft 02 | Dataset, models, scoring | Frontend skeleton; k6 scenarios | Unit tests pass (110 passed) |
 | 3 ✅ | Build | Diagrams; docs 03/04 | API, Lambda handler, logging | Frontend ↔ local API; result scripts | Local demo works |
-| 4 ⏳ | Cloud | Report draft & case study | SAM deploy; IAM; logs | AWS load tests; cold starts; cost | Real AWS numbers |
+| 4 ✅ | Cloud | Report draft & case study | SAM deploy; IAM; logs | AWS load tests; cold starts; cost | Real AWS numbers |
 | 5 ⏳ | Integrate | Final report + slides | Fixes, reviews | Validation report | Submission + viva |
 
 ## 5.3 Experiment plan (summary; details in [07](07_testing_and_experiments.md))
 
 | ID | Experiment | Variable | Measure | Where |
 |---|---|---|---|---|
-| E1 | Baseline latency | — (1 VU) | avg, min, median, max, p90, p95 | local ✅ + AWS ⏳ |
-| E2 | Concurrency | 1 / 10 / 25 / 50 VUs | latency percentiles, throughput, errors | local ✅ + AWS ⏳ |
-| E3 | Cold vs. warm | idle gap (e.g. 15+ min), new deploy | Init Duration, first vs. later duration | AWS only ⏳ |
-| E4 | Memory size (optional) | 128 / 512 / 1024 MB | duration, cost per 1,000 | AWS only ⏳ |
-| E5 | Cost per 1,000 requests | memory, duration | GB-s and USD | AWS + pricing calculator ⏳ |
+| E1 | Baseline latency | — (1 VU) | avg, min, median, max, p90, p95 | local ✅ + AWS ✅ |
+| E2 | Concurrency | 1 / 10 / 25 / 50 VUs | latency percentiles, throughput, errors | local ✅ + AWS ✅ |
+| E3 | Cold vs. warm | idle gap (e.g. 15+ min), new deploy | Init Duration, first vs. later duration | AWS ✅ |
+| E4 | Memory size (optional) | 128 / 512 / 1024 MB | duration, cost per 1,000 | AWS only ⏳ not run (optional) |
+| E5 | Cost per 1,000 requests | memory, duration | GB-s and USD | AWS + Price List API ✅ ($0.002510 per 1,000) |
 
 ## 5.4 Risks
 
