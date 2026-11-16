@@ -1,0 +1,5 @@
+measurement_label,run_id,timestamp_utc,region,memory_mb,architecture,trigger,request_id,first_invocation_in_env,init_duration_ms,duration_ms,billed_duration_ms,max_memory_used_mb,client_latency_ms,notes
+pending_cloud,,,<region>,512,x86_64,first request after fresh deploy,,true,,,,,,PENDING: copy from CloudWatch REPORT line (query Q1)
+pending_cloud,,,<region>,512,x86_64,warm request 1 s later,,false,,,,,,PENDING
+pending_cloud,,,<region>,512,x86_64,first request after >=15 min idle,,true,,,,,,PENDING
+pending_cloud,,,<region>,512,x86_64,burst of 10 parallel requests (new envs),,,,,,,,PENDING: count Init Duration lines

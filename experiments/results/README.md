@@ -1,0 +1,23 @@
+# Results
+
+Every row carries exactly one `measurement_label`:
+
+| Label | Meaning |
+|---|---|
+| `actual_local` | Measured by us on a laptop against the local API |
+| `actual_aws` | Measured by us against the deployed AWS API |
+| `pending_cloud` | Placeholder row; the AWS measurement has not been collected yet |
+| `illustrative` | Teaching example; never a result |
+
+| File | Contents | Status |
+|---|---|---|
+| `local_results.csv` | Latency/throughput per scenario (columns in `analysis/results_schema.py`) | ✅ `actual_local` run `20261113T161410Z-494296` |
+| `local_results.json` | The same rows as JSON, grouped by run | ✅ |
+| `local_summary.md` | Markdown table from `analyze_results.py` | ✅ |
+| `raw/local_samples_*.json` | Every individual latency sample (ms) | ✅ |
+| `cloud_results_template.csv` | Same columns; one `pending_cloud` row per scenario | ⏳ template |
+| `cold_start_template.csv` | Columns for cold vs. warm observations | ⏳ template |
+| `cloud_results.csv` | Created by `collect_results.py` after the AWS k6 runs | ⏳ not yet created |
+| `raw/k6_*.json` | k6 summaries written by `load_test.js` | ⏳ |
+
+Do not edit measured rows by hand. Re-run the experiment instead. Keep failed or odd runs and add a note rather than deleting them.
