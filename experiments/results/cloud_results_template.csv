@@ -1,0 +1,5 @@
+measurement_label,run_id,timestamp_utc,environment,tool,target,endpoint,scenario,vus,duration_s,think_time_s,requests,failed_requests,error_rate,throughput_rps,avg_ms,min_ms,median_ms,max_ms,p90_ms,p95_ms,p99_ms,notes
+pending_cloud,,,AWS <region> <memory> <arch>,k6,https://<api-id>.execute-api.<region>.amazonaws.com,POST /recommendations,vu1,1,30,1.0,,,,,,,,,,,,PENDING: run experiments/run_aws_experiments.sh
+pending_cloud,,,AWS <region> <memory> <arch>,k6,https://<api-id>.execute-api.<region>.amazonaws.com,POST /recommendations,vu10,10,30,1.0,,,,,,,,,,,,PENDING: run experiments/run_aws_experiments.sh
+pending_cloud,,,AWS <region> <memory> <arch>,k6,https://<api-id>.execute-api.<region>.amazonaws.com,POST /recommendations,vu25,25,30,1.0,,,,,,,,,,,,PENDING: run experiments/run_aws_experiments.sh
+pending_cloud,,,AWS <region> <memory> <arch>,k6,https://<api-id>.execute-api.<region>.amazonaws.com,POST /recommendations,vu50,50,30,1.0,,,,,,,,,,,,PENDING: run experiments/run_aws_experiments.sh

@@ -1,0 +1,24 @@
+{
+  "_comment": "Inputs for experiments/analysis/cost_model.py. Prices are dated (see pricing_checked_on/pricing_source); re-check them on the AWS Pricing Calculator before reuse. Do not copy prices from old blog posts.",
+  "region": "ap-south-1",
+  "pricing_checked_on": "2026-11-16",
+  "pricing_source": "AWS Price List API, ap-south-1 offer files: AWSLambda (published 2026-11-11), AmazonApiGateway (2026-11-12), AmazonCloudWatch (2026-11-04), AWSDataTransfer (2026-11-11). https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/<service>/current/ap-south-1/index.json",
+  "requests": 1000,
+  "lambda_memory_mb": 512,
+  "lambda_architecture": "x86_64",
+  "avg_billed_duration_ms": 12.593,
+  "avg_billed_duration_source": "Measured 2026-11-16 on AWS: CloudWatch Logs Insights over REPORT lines, n=2,398 invocations (cold probe + k6 run k6-20261116T162319Z + later checks), includes cold starts. p50 5 ms, p95 14 ms. File: experiments/results/raw/cloudwatch_billed_duration_20261116.csv",
+  "avg_response_size_kb": 2.1,
+  "log_bytes_per_request": 1500.6,
+  "prices_usd": {
+    "lambda_per_1m_requests": 0.2,
+    "lambda_per_gb_second": 1.66667e-05,
+    "api_gateway_http_per_1m_requests": 1.05,
+    "cloudwatch_logs_ingest_per_gb": 0.67,
+    "data_transfer_out_per_gb": 0.1093
+  },
+  "apply_free_tier": false,
+  "_price_notes": "x86_64 Tier-1 compute price; HTTP API first 300M requests/month; CloudWatch Standard log class; data transfer first 10 TB after the 100 GB/month global free allowance. Free tier not applied.",
+  "avg_response_size_source": "Measured 2026-11-16 on AWS: default request (top_n=5) = 1,919 B body + 234 B headers",
+  "log_bytes_per_request_source": "Measured 2026-11-16: 3,598,513 bytes of Lambda log messages / 2,398 invocations (about 6 lines per request). File: experiments/results/raw/cloudwatch_log_bytes_20261116.csv. Message bytes only; CloudWatch's billed ingestion may add a small per-event overhead."
+}
