@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Match Recommender — IT457 Serverless Demo</title>
+  <meta name="description" content="IT457 Cloud Computing student prototype: explainable matchmaking recommendations served by AWS Lambda and API Gateway. Synthetic data only.">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">◆</span>
+        <div>
+          <h1>Match Recommender</h1>
+          <p class="tagline">Serverless, explainable matchmaking — an IT457 Cloud Computing case-study prototype</p>
+        </div>
+      </div>
+      <div class="api-status" id="api-status" role="status" aria-live="polite">
+        <span class="dot" id="health-dot" aria-hidden="true"></span>
+        <span id="health-text">Checking API…</span>
+        <button type="button" class="link-btn" id="health-refresh" aria-label="Re-check API health">Re-check</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="notice wrap" role="note">
+    <strong>Academic prototype.</strong> Inspired by the Shaadi.com AWS case study. It is <em>not</em> Shaadi.com's
+    system and is not affiliated with Shaadi.com. All profiles are <strong>synthetic</strong>, and scores come from a
+    transparent rules-based formula, not a trained ML model.
+  </div>
+
+  <main id="main" class="wrap layout">
+    <section class="panel form-panel" aria-labelledby="form-title">
+      <div class="panel-head">
+        <h2 id="form-title">Your profile</h2>
+        <label class="preset">
+          <span>Demo profile</span>
+          <select id="preset">
+            <option value="ahmedabad">U001 · Ahmedabad engineer</option>
+            <option value="mumbai">U002 · Mumbai commerce</option>
+            <option value="strict">U003 · Pune only (strict city)</option>
+            <option value="nomatch">U004 · No matches (age 60–70)</option>
+          </select>
+        </label>
+      </div>
+
+      <form id="profile-form" novalidate>
+        <div class="grid-2">
+          <label class="field">
+            <span>User ID</span>
+            <input id="user_id" name="user_id" required maxlength="20" pattern="[A-Za-z0-9_-]+" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Age</span>
+            <input id="age" name="age" type="number" min="18" max="100" required inputmode="numeric">
+          </label>
+          <label class="field">
+            <span>City</span>
+            <input id="city" name="city" required list="city-list" maxlength="50">
+          </label>
+          <label class="field">
+            <span>Education</span>
+            <select id="education" name="education" required></select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Interests <small>(comma-separated, up to 10)</small></span>
+          <input id="interests" name="interests" required placeholder="music, travel, technology">
+        </label>
+        <div class="chips" id="interest-suggestions" aria-label="Suggested interests"></div>
+
+        <fieldset class="prefs">
+          <legend>Preferences</legend>
+          <div class="grid-2">
+            <label class="field">
+              <span>Min age: <output id="min_age_out">23</output></span>
+              <input id="min_age" type="range" min="18" max="60" value="23">
+            </label>
+            <label class="field">
+              <span>Max age: <output id="max_age_out">29</output></span>
+              <input id="max_age" type="range" min="18" max="70" value="29">
+            </label>
+            <label class="field">
+              <span>Preferred city <small>(optional)</small></span>
+              <input id="preferred_city" list="city-list" maxlength="50">
+            </label>
+            <label class="field">
+              <span>Preferred education <small>(optional)</small></span>
+              <select id="preferred_education"><option value="">Any</option></select>
+            </label>
+          </div>
+          <div class="grid-2">
+            <label class="check">
+              <input id="city_required" type="checkbox">
+              <span>Only show the preferred city (hard filter)</span>
+            </label>
+            <label class="field inline">
+              <span>Results</span>
+              <select id="top_n">
+                <option>3</option><option selected>5</option><option>10</option><option>20</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="form-error" id="form-error" role="alert" hidden></div>
+
+        <button type="submit" class="primary" id="submit-btn">
+          <span class="btn-label">Generate recommendations</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <datalist id="city-list">
+        <option value="Ahmedabad"><option value="Mumbai"><option value="Pune"><option value="Bengaluru">
+        <option value="Delhi"><option value="Surat"><option value="Vadodara"><option value="Hyderabad">
+        <option value="Jaipur"><option value="Chennai">
+      </datalist>
+    </section>
+
+    <section class="panel results-panel" aria-labelledby="results-title" aria-busy="false" id="results-panel">
+      <div class="panel-head">
+        <h2 id="results-title">Recommendations</h2>
+        <div class="metrics" id="metrics" hidden>
+          <span title="Measured in the browser: request sent → response received"><b id="m-rtt">–</b> round trip</span>
+          <span title="Measured inside the API (X-Response-Time-Ms header)"><b id="m-server">–</b> server</span>
+          <span title="Candidates remaining after the age/city filters"><b id="m-filtered">–</b> eligible</span>
+        </div>
+      </div>
+
+      <div id="results" class="results">
+        <div class="empty">
+          <p class="empty-title">No results yet</p>
+          <p>Choose a demo profile or edit the form, then select <b>Generate recommendations</b>.</p>
+        </div>
+      </div>
+
+      <details class="raw">
+        <summary>Raw API response</summary>
+        <pre id="raw-json">–</pre>
+      </details>
+      <p class="request-id" id="request-id"></p>
+    </section>
+  </main>
+
+  <section class="wrap panel how" aria-labelledby="how-title">
+    <h2 id="how-title">How the score works</h2>
+    <div class="weights">
+      <div><b>30</b><span>Age closeness</span><small>30 × (1 − gap/10)</small></div>
+      <div><b>25</b><span>Location</span><small>preferred city = 25, your city = 10</small></div>
+      <div><b>15</b><span>Education</span><small>same = 15, related field = 8</small></div>
+      <div><b>30</b><span>Shared interests</span><small>30 × common / smaller list</small></div>
+    </div>
+    <p class="flow">Browser → API Gateway (HTTP API) → AWS Lambda (FastAPI + Mangum) → validation → scoring → ranked JSON</p>
+  </section>
+
+  <footer class="wrap footer">
+    <p>IT457 Cloud Computing · Group project · <span id="api-url-label"></span></p>
+  </footer>
+
+  <template id="card-template">
+    <article class="card">
+      <div class="score-ring" role="img"><span class="score-value"></span></div>
+      <div class="card-body">
+        <header class="card-head">
+          <h3 class="cand-id"></h3>
+          <span class="rank"></span>
+        </header>
+        <p class="meta"></p>
+        <ul class="reasons"></ul>
+        <div class="bars" aria-label="Score breakdown"></div>
+      </div>
+    </article>
+  </template>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
