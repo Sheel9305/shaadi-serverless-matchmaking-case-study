@@ -278,7 +278,7 @@ No prices are hard-coded. Fill them into [`experiments/configs/cost_inputs.json`
 | AWS latency at 1/10/25/50 VUs | ✅ Actual AWS, 2026-11-16: p95 72–92 ms, flat across VUs; 5.5% HTTP 503 at 50 VUs ([cloud_summary.md](experiments/results/cloud_summary.md)) |
 | Lambda cold-start Init Duration | ✅ Actual AWS: about 1.1 s Init Duration; 1,723 ms first request vs about 52 ms warm, client side ([doc 07](docs/07_testing_and_experiments.md)) |
 | Billed duration → cost per 1,000 requests | ✅ avg billed 12.6 ms → **$0.0025 per 1,000 requests** before Free Tier ([doc 08](docs/08_cost_analysis.md)) |
-| Frontend screenshots | _Add to `reports/figures/` after the demo run_ |
+| Frontend screenshots | ✅ Local and AWS, in [`reports/figures/`](reports/figures/) |
 
 ## Repository structure
 

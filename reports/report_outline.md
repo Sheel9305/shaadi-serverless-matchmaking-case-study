@@ -32,7 +32,8 @@
 - [x] AWS charts (`experiments/charts/aws_*.png`)
 - [x] Cold-start results (`experiments/results/cold_start_results.csv`)
 - [x] Cost per 1,000 requests with price-check date
-- [ ] ⏳ Screenshots: frontend against the AWS URL, Lambda console, CloudWatch REPORT line
+- [x] Screenshots: frontend against the AWS URL (`reports/figures/frontend_*_aws.png`)
+- [ ] ⏳ Screenshots: Lambda console, CloudWatch REPORT line (needs AWS console access)
 - [x] Week 1 research content (`research/week1_summary.md`)
 - [x] Member names and IDs (Group 49)
 
