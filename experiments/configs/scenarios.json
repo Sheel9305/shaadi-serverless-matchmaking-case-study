@@ -1,0 +1,11 @@
+{
+  "_comment": "Concurrency scenarios shared by the k6 scripts and the Python benchmark. Keep traffic conservative.",
+  "think_time_s": 1.0,
+  "endpoint": "/recommendations",
+  "scenarios": [
+    {"name": "vu1",  "vus": 1,  "duration_s": 30},
+    {"name": "vu10", "vus": 10, "duration_s": 30},
+    {"name": "vu25", "vus": 25, "duration_s": 30},
+    {"name": "vu50", "vus": 50, "duration_s": 30}
+  ]
+}
