@@ -1,0 +1,13 @@
+{
+  "user_id": "U001",
+  "age": 25,
+  "city": "Ahmedabad",
+  "education": "Engineering",
+  "interests": ["music", "travel", "technology"],
+  "preferences": {
+    "min_age": 23,
+    "max_age": 29,
+    "preferred_city": "Ahmedabad"
+  },
+  "top_n": 3
+}
