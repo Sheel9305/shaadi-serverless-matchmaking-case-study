@@ -206,7 +206,6 @@
       });
       const rtt = performance.now() - t0;
       const body = await res.json().catch(() => ({}));
-      $("raw-json").textContent = JSON.stringify(body, null, 2);
       $("request-id").textContent = body.request_id ? `request_id: ${body.request_id}` : "";
       showMetrics(rtt, res.headers.get("X-Response-Time-Ms"), body.candidates_after_filters);
 
@@ -307,7 +306,6 @@
   // ---------- Wire up ----------
   populateSelects();
   applyPreset("ahmedabad");
-  $("api-url-label").textContent = `API: ${API_BASE_URL}`;
   $("preset").addEventListener("change", (e) => applyPreset(e.target.value));
   els.min_age.addEventListener("input", syncRangeLabels);
   els.max_age.addEventListener("input", syncRangeLabels);

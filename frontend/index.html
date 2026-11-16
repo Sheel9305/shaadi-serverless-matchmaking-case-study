@@ -17,7 +17,6 @@
         <span class="brand-mark" aria-hidden="true">◆</span>
         <div>
           <h1>Match Recommender</h1>
-          <p class="tagline">Serverless, explainable matchmaking — an IT457 Cloud Computing case-study prototype</p>
         </div>
       </div>
       <div class="api-status" id="api-status" role="status" aria-live="polite">
@@ -134,11 +133,6 @@
           <p>Choose a demo profile or edit the form, then select <b>Generate recommendations</b>.</p>
         </div>
       </div>
-
-      <details class="raw">
-        <summary>Raw API response</summary>
-        <pre id="raw-json">–</pre>
-      </details>
       <p class="request-id" id="request-id"></p>
     </section>
   </main>
@@ -153,10 +147,6 @@
     </div>
     <p class="flow">Browser → API Gateway (HTTP API) → AWS Lambda (FastAPI + Mangum) → validation → scoring → ranked JSON</p>
   </section>
-
-  <footer class="wrap footer">
-    <p>IT457 Cloud Computing · Group project · <span id="api-url-label"></span></p>
-  </footer>
 
   <template id="card-template">
     <article class="card">
