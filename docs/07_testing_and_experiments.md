@@ -148,6 +148,8 @@ The first request was about **33× slower** than the warm ones, while the applic
 | Cold probe, next 10 requests | — | 4.65–16.38 ms | 5–17 ms | 85 MB |
 | Later cold start after idle (16:42:17 UTC) | **1,101.47 ms** | 249.04 ms | 1,351 ms | 85 MB |
 
+![CloudWatch REPORT line of the cold start (account ID redacted)](../reports/figures/aws_cloudwatch_report_line.png)
+
 Of the 1,723 ms the client saw for the first request, about **1,378 ms** was Lambda (1,116 ms init + 262 ms first invocation). The rest, about 345 ms, is the new HTTPS connection plus API Gateway. Our own `lambda_init` log puts module import and dataset load at 1,022 ms, so most of `Init Duration` is our Python imports, not the platform. The first invocation (262 ms) is also slower than warm ones (about 5 ms), because Python's first-call costs (lazy imports, Pydantic schema building) come on top. **Billed duration includes init** for this ZIP-packaged Python function, which is why the cold request is billed 1,379 ms. Memory use is 85 MB of 512 MB.
 
 **Billed duration over all 2,398 invocations** (Logs Insights, `experiments/results/raw/cloudwatch_billed_duration_20261116.csv`): average **12.593 ms**, p50 5 ms, p95 14 ms (average duration 7.36 ms). The average is pulled up by the few cold starts. In the raw sample (1,421 invocations), the warm average is 6.74 ms. These figures feed the cost model in doc 08.

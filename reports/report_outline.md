@@ -33,7 +33,7 @@
 - [x] Cold-start results (`experiments/results/cold_start_results.csv`)
 - [x] Cost per 1,000 requests with price-check date
 - [x] Screenshots: frontend against the AWS URL (`reports/figures/frontend_*_aws.png`)
-- [ ] ⏳ Screenshots: Lambda console, CloudWatch REPORT line (needs AWS console access)
+- [x] Screenshots: Lambda console (`reports/figures/aws_lambda_console.png`), CloudWatch REPORT line (`reports/figures/aws_cloudwatch_report_line.png`); account ID redacted
 - [x] Week 1 research content (`research/week1_summary.md`)
 - [x] Member names and IDs (Group 49)
 
