@@ -13,7 +13,7 @@
 //   VUS / DURATION  override the scenario values
 import http from "k6/http";
 import { check, sleep } from "k6";
-import { buildOptions } from "./scenarios.js";
+import { buildOptions, SCENARIOS } from "./scenarios.js";
 
 const BASE_URL = (__ENV.BASE_URL || "http://localhost:8000").replace(/\/+$/, "");
 const SCENARIO = __ENV.SCENARIO || "smoke";
@@ -62,8 +62,10 @@ export function handleSummary(data) {
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const file = `experiments/results/raw/k6_${LABEL}_${SCENARIO}_${stamp}.json`;
   data.meta = { label: LABEL, scenario: SCENARIO, endpoint: ENDPOINT, base_url: BASE_URL,
-    think_time_s: THINK_TIME, vus: options.scenarios[SCENARIO].vus,
-    duration: options.scenarios[SCENARIO].duration };
+    think_time_s: THINK_TIME,
+    // Read from SCENARIOS/__ENV, not `options`: k6 v2 does not expose the exported options here.
+    vus: Number(__ENV.VUS || SCENARIOS[SCENARIO].vus),
+    duration: __ENV.DURATION || SCENARIOS[SCENARIO].duration };
   return {
     [file]: JSON.stringify(data, null, 2),
     stdout: `\nSaved k6 summary to ${file}\n`,

@@ -34,7 +34,7 @@ def parse_duration(value: str) -> float:
     return float(value)
 
 
-def k6_summary_to_row(summary: dict, source: str, environment: str) -> tuple[str, dict]:
+def k6_summary_to_row(summary: dict, source: str, environment: str, run_id: str = "") -> tuple[str, dict]:
     meta = summary.get("meta", {})
     label_key = meta.get("label", "local")
     if label_key not in LABEL_MAP:
@@ -47,7 +47,7 @@ def k6_summary_to_row(summary: dict, source: str, environment: str) -> tuple[str
     count = int(reqs["count"])
     row = {
         "measurement_label": measurement_label,
-        "run_id": Path(source).stem,
+        "run_id": run_id or Path(source).stem,
         "timestamp_utc": datetime.now(UTC).isoformat(timespec="seconds"),
         "environment": environment or ("AWS (fill in region/memory)" if label_key == "aws" else "local"),
         "tool": "k6",
@@ -85,8 +85,12 @@ def main() -> int:
     if not files:
         print("No new k6 summary files found in", args.raw_dir)
         return 0
+    # All files imported together share one run_id, so analyze/generate_charts ("--run-id latest")
+    # see the whole 1/10/25/50-VU set as one run instead of only the last scenario.
+    run_id = "k6-" + datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     for path in files:
-        csv_name, row = k6_summary_to_row(json.loads(path.read_text(encoding="utf-8")), str(path), args.environment)
+        summary = json.loads(path.read_text(encoding="utf-8"))
+        csv_name, row = k6_summary_to_row(summary, str(path), args.environment, run_id)
         append_rows(RESULTS_DIR / csv_name, [row])
         done.add(path.name)
         print(f"{path.name} -> {csv_name} ({row['measurement_label']}, {row['scenario']})")
