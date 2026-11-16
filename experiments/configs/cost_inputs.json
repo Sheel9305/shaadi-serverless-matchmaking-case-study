@@ -1,0 +1,21 @@
+{
+  "_comment": "Inputs for experiments/analysis/cost_model.py. PRICES ARE DELIBERATELY null - look them up in the AWS Pricing Calculator (https://calculator.aws/) for your region and date, then fill them in. Do not copy prices from old blog posts.",
+  "region": "ap-south-1",
+  "pricing_checked_on": null,
+  "pricing_source": "https://calculator.aws/  (also https://aws.amazon.com/lambda/pricing/ and https://aws.amazon.com/api-gateway/pricing/)",
+  "requests": 1000,
+  "lambda_memory_mb": 512,
+  "lambda_architecture": "x86_64",
+  "avg_billed_duration_ms": null,
+  "avg_billed_duration_source": "Take from CloudWatch REPORT lines ('Billed Duration') of the AWS experiment; null = not yet measured",
+  "avg_response_size_kb": 3,
+  "log_bytes_per_request": 900,
+  "prices_usd": {
+    "lambda_per_1m_requests": null,
+    "lambda_per_gb_second": null,
+    "api_gateway_http_per_1m_requests": null,
+    "cloudwatch_logs_ingest_per_gb": null,
+    "data_transfer_out_per_gb": null
+  },
+  "apply_free_tier": false
+}
